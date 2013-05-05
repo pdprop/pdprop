@@ -1,0 +1,22 @@
+# mkparis  vers. 1.1 starts...
+#Name= temp.dadn                     
+#Got Original #units=                     ksi_in    
+ #Got Original #dKth=    18.000000    
+ #Got Original  #A=   4.99999997E-09
+ #Got Original  #m=    1.9000000    
+ #Got Original #dKc=    100.00000    
+#Conversions:
+# 1 ksi*sqrt(inch) = 1.0989*MPa*sqrt(m)
+# 1 MPa*sqrt(m)  =   31.6228*N/(mm**(3/2) )
+# 1 MPa*sqrt(mm) =         1 N/(mm**(3/2) )
+
+#All inputs converted to    MPa*sqrt(mm)   and  mm/cycle
+#Note that this is same as  N/(mm**(3/2))  and  mm/cycle
+
+#Units= mpa_mm
+#dKth=   626.
+#dKc=    3475.
+# mm/cycle      MPa*sqrt(mm)                                                Original data ksi_in
+#     dk            da/dn             logdk      logdadn             dk          da/dn
+ 0.6255053E+03  0.3081921E-04  0.2796231E+01 -0.4511178E+01     0.1800000E+02  0.1213355E-05
+ 0.3475030E+04  0.8013158E-03  0.3540958E+01 -0.3096196E+01     0.1000000E+03  0.3154786E-04

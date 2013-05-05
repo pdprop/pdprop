@@ -1,0 +1,6 @@
+#NAME= temp.dadn
+#UNITS= ksi_in
+#dKth= 18.0 (ignored in table file)
+#A=    5.0E-09 (ignored in table file) 
+#m=    1.90 (ignored in table file) 
+#dKc=  100.   (ignored in table file) 

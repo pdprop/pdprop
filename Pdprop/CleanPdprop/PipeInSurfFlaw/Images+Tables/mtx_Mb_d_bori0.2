@@ -1,0 +1,137 @@
+# this file was used to construct the  real*4 /data/ of
+# s/r  getIpsMmMb()
+
+#dmm01
+#Internal surface pipe flaw,  oriented circumferentially
+#Deepest point  crack depth = d
+#Bori=  0.10     B/ri  B=thick  ri=internalRadius
+#iaoc iaob a/c a/B  Mm
+ 1.103 1.219 1.529 1.939 2.411
+ 1.059 1.168 1.375 1.599 1.803
+  .896 .999 1.031 1.121 1.148
+  .663 .667 .670 .686 .702
+
+#transpose result:
+ 1.103  1.059  .896  .663 
+ 1.219  1.168 .999 .667 
+ 1.529  1.375  1.031 .670 
+ 1.939 1.599  1.121 .686 
+ 2.411  1.803 1.148 .702
+
+
+#dmb01  from tableMb_IPflaw_d_bori0.1
+#Internal surface pipe flaw,  oriented circumferentially
+#Deepest point of flaw  crack length = d
+#Bori=  0.10     B/ri  B=thick  ri=internalRadius
+ 1.103 .921 .829 .677 .479
+ 1.059 .870 .736 .561 .269
+  .896 .731 .504 .306 .014
+  .663 .574 .327 .140 -0.105
+
+ 1.103  1.059  .896  .663 
+.921  .870  .731  .574 
+ .829  .736  .504  .327 
+ .677 .561  .306  .140 
+ .479 .269 .014 -0.105
+
+
+#dmm02
+#Internal surface pipe flaw,  oriented circumferentially
+#Deepest point :  crack depth = "d"
+#Bori=  0.20     B/ri  B=thick  ri=internalRadius
+#iaoc iaob a/c a/B  Mm
+ 1.103 1.214 1.382 1.661 2.031
+ 1.059 1.144 1.318 1.517 1.782
+  .896 1.004 1.030 1.124 1.192
+  .663 .667 .670 .686 .702
+
+ 1.103  1.059 .896 .663 
+ 1.214 1.144 1.004 .667 
+ 1.382 1.318 1.030 .670 
+ 1.661  1.517 1.124 .686 
+ 2.031  1.782  1.192   .702 
+
+#dmb02
+#Internal surface pipe flaw,  oriented circumferentially
+#Deepest point of flaw.  crack depth= "d"
+#Bori=  0.20     B/ri  B=thick  ri=internalRadius
+#d  Mb  B/ri= 0.2
+# 0.   .2    .4   .6   .8  a/B
+ 1.103 .903 .776 .624 .386   # 0.1 a/c
+1.059 .851 .698 .515 .253    # 0.2
+ .896 .735 .503 .305 .027    # 0.5
+.663 .582 .334 .117 -0.099   # 1.0
+
+#  Use for DATA statement
+#  0.1  0.2    0.5  1.0  a/c
+ 1.103 1.059  .896 .663   # 0.0   a/B
+ .903 .851 .735 .582      # 0.2
+.776 .698  .503  .334     # 0.4
+ .624 .515 .305 .117      # 0.6
+.386  .253 .027 -0.099    # 0.8
+
+
+#smm01 from tableMm_IPflaw_s_bori0.1
+#Internal surface pipe flaw,  oriented circumferentially
+#Crack s     end at inner surface: 1/2 crack length
+#Bori=  0.10     B/ri  B=thick  ri=internalRadius
+  .384 .482 .700 .981 1.363 
+  .521 .617 .835 1.048 1.255 
+  .697 .731 .801 .889 .993 
+  .729 .681 .706 .733 .764
+
+ .384  .521  .697  .729 
+ .482  .617  .731 .681 
+ .700  .835  .801  .706 
+ .981  1.048  .889 .733 
+ 1.363 1.255 .993 .764
+
+#smb01   from tableMb_IPflaw_s_bori0.1
+#Internal surface pipe flaw,  oriented circumferentially
+#Crack s    end of crack 1/2 length at inner surface
+#Bori=  0.10     B/ri  B=thick  ri=internalRadius
+  .384 .487 .498 .525 .570 
+  .521 .623 .591 .556 .519 
+  .697 .628 .563 .502 .445 
+  .729 .623 .528 .431 .332
+
+ .384  .521  .697  .729 
+ .487  .623 .628 .623 
+ .498  .591 .563 .528 
+ .525  .556  .502  .431 
+ .570  .519 .445 .332
+
+
+#smm02   from  tableMm_IPflaw_s_bori0.2
+#Internal surface pipe flaw,  oriented circumferentially
+#Flaw edge or end at inside surface   "s"
+#Bori=  0.20     B/ri  B=thick  ri=internalRadius
+# file is same as  Bori=0.10
+  .384 .482 .700 .981 1.363
+  .521 .617 .835 1.048 1.255
+  .697 .731 .801 .889 .993
+  .729 .681 .706 .733 .764
+
+ .384  .521  .697  .729
+ .482  .617  .731 .681
+ .700  .835  .801  .706
+ .981  1.048  .889 .733
+ 1.363 1.255 .993 .764
+
+#smb02   from tableMb_IPflaw_s_bori0.2
+#Internal surface pipe flaw,  oriented circumferentially
+# At intersection of flaw front with inside surface: "s"
+#Bori=  0.20     B/ri  B=thick  ri=internalRadius
+# file is same as one for B/ri= 0.10
+  .384 .487 .498 .525 .570
+  .521 .623 .591 .556 .519
+  .697 .628 .563 .502 .445
+  .729 .623 .528 .431 .332
+
+ .384  .521  .697  .729
+ .487  .623 .628 .623
+ .498  .591 .563 .528
+ .525  .556  .502  .431
+ .570  .519 .445 .332
+
+

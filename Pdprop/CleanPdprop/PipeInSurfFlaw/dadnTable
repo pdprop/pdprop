@@ -1,0 +1,28 @@
+# mkparis2  vers. 1.1 starts...
+# Program convert to table of mpa_mm, from other units table
+#Name= A36merged                     
+#Data digitized from merged graph in file a36+1015dadn-2.png
+#
+#MPa*Sqrt(mm)  dadn mm/cycle
+#Got Original #units=                     mpa_m     
+#622.194  3.55031e-05
+#950.39  0.000224548
+#Conversions:
+# 1 ksi*sqrt(inch) = 1.0989*MPa*sqrt(m)
+# 1 MPa*sqrt(m)  =   31.6228*N/(mm**(3/2) )
+# 1 MPa*sqrt(mm) =         1 N/(mm**(3/2) )
+
+#All inputs converted to    MPa*sqrt(mm)   and  mm/cycle
+#Note that this is same as  N/(mm**(3/2))  and  mm/cycle
+
+#   MPa*sqrt(mm)                                                  Original data  mpa_m
+#     dk            da/dn             logdk      logdadn             dk          da/dn
+ 0.4750251E+04  0.9620540E-07  0.3676717E+01 -0.7016800E+01     0.1502160E+03  0.9620540E-07
+ 0.5596698E+04  0.4562300E-06  0.3747932E+01 -0.6340816E+01     0.1769830E+03  0.4562300E-06
+ 0.6964448E+04  0.1160170E-05  0.3842887E+01 -0.5935478E+01     0.2202350E+03  0.1160170E-05
+ 0.9091050E+04  0.3224090E-05  0.3958614E+01 -0.5491593E+01     0.2874840E+03  0.3224090E-05
+ 0.1369795E+05  0.1069760E-04  0.4136656E+01 -0.4970714E+01     0.4331670E+03  0.1069760E-04
+ 0.2415163E+05  0.7556810E-04  0.4382946E+01 -0.4121662E+01     0.7637410E+03  0.7556810E-04
+ 0.3923093E+05  0.8520410E-03  0.4593628E+01 -0.3069540E+01     0.1240590E+04  0.8520410E-03
+ 0.4653864E+05  0.3307300E-02  0.4667814E+01 -0.2480526E+01     0.1471680E+04  0.3307300E-02
+ 0.5299001E+05  0.1074680E-01  0.4724194E+01 -0.1968721E+01     0.1675690E+04  0.1074680E-01
