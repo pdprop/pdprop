@@ -1,0 +1,79 @@
+Welcome to the "Pdprop" Crack Propagation Simulation Programs.
+
+When you read this you are in a  folder called "Pdprop".
+In this folder there are two items:
+    1. 0_README      this text file
+    2. CleanPdprop   a folder that contains the software.
+
+After a new download:
+In order to run properly the programs will probably need to 
+be compiled in your system.  This can be done with 
+the following commands:
+
+      cd CleanPdprop
+
+      ./Allcompile
+
+The script "Allcompile" will create new vesions of the Fortran
+binary (runtime) programs.  Note that you will need the Linux
+compilers
+    "gfortran"  and  "gcc"
+and 
+    "gnuplot"   (plotting softwere)
+    "htmldoc"   (converts html to pdf file)
+
+available in your system. Just type the command "gfortran -v"
+etc.  now to see if they are there.  If any are not there
+ask your SysAdmin person to please install them.
+
+Check the output from Allcompile to see if there are any errors.
+If all looks ok,  you are ready to run simulations.
+
+Suggestion:
+  The files involved are not that large, so probably the best
+way to run a simulation is to copy the entire "CleanPdprop" folder
+to some new location for each problem.  e.g.:
+
+       cp -r CleanProp   /home/username/newProblemName
+
+   The copied folder will then have all the files and programs  usable 
+(or alterable)  for your new crack propagation problem.
+
+    For running a problem, go into the problem file folder e.g.:
+        cd /home/username/newProblemName/
+
+and use the command:
+        ls
+to see the available problem type folders.  At present there
+are three available:
+        PlateSurfFlaw,   PlateLongSurfFlaw, and  PipeInSurfFlaw
+
+Select one of the three and cd into it. e.g.:
+        cd PlateSurfFlaw
+
+In that folder run the setup file to help you define your problem 
+simulation. e.g.:
+        ./setup1
+
+There are sample files in the folder to allow you to make a test run. 
+If you wish to define a new problem you will need to alter or insert 
+new versions of:
+
+         problem environment file  e.g.:  pdprop.env
+         dadn file                 e.g.:  a36+1015.dadn
+         history file              e.g.:  load1.txt
+         material file             e.g.:  merged_a36_fitted.html
+
+Take a look at each one now, to see what you will need for
+your problem's simulation.  The folder PlateSurfFlaw  contains all the
+files for a typical run,  and also all the output files that are generated
+by a run (except the huge data file from the simulation run).  
+At the end of a sim. run use makereport 
+    e.g.:        ./makereport1 {simulationOutputFilename}
+to make an html and a pdf report file. (don't type the { } brackets).
+
+Good Luck,
+Al
+         
+
+
