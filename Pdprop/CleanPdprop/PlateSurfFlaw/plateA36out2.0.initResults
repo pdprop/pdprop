@@ -1,0 +1,251 @@
+ #Opening material file= matfile                                                                          as unit 10
+ #Found History multiply factor:    1.0000000    
+#MAX=  0.2558594E+03
+#MIN= -0.1308594E+03
+#rain2-64bin    255.      -128.
+#BEGIN
+ #Input x MultF : Smax=   176.00000      Smin=  -128.00000     Srange=   304.00000      Cycles=   1.0000000    
+ #Input x MultF : Smax=   249.00000      Smin=  -128.00000     Srange=   377.00000      Cycles=   1.0000000    
+ #Input x MultF : Smax=   176.00000      Smin= -3.33999992E-06 Srange=   176.00000      Cycles=   1.0000000    
+ #Input x MultF : Smax=   152.00000      Smin=   24.299999     Srange=   127.70000      Cycles=   2.0000000    
+ #Input x MultF : Smax=   158.00000      Smin=   36.400002     Srange=   121.60000      Cycles=   2.0000000    
+ #Inputs after sorting:
+ #  Smax_in   Smin_in   SRange_in   Cycles_in
+#Inputs=   249.0 -128.0  377.0         1.0
+#Inputs=   176.0 -128.0  304.0         1.0
+#Inputs=   176.0   -0.0  176.0         1.0
+#Inputs=   152.0   24.3  127.7         2.0
+#Inputs=   158.0   36.4  121.6         2.0
+#<html><title>SAE Standard Fatigue Data File format</title><body>
+#<FORM METHOD="POST" ACTION="http://mme.uwaterloo.ca/cgi-bin/catgnume">
+#<DL compact> Pick one:
+#<input type="radio" name="#saeinput" value="FDE_plot" >FDE_plot
+#<input type="radio" name="#saeinput" value="FDE_fit"  checked >FDE_fit
+#<input type="submit" value="Send for processing">
+#<br><pre><textarea rows=50 cols=90 name="SAE_Standard_File" >
+#
+#Copyright (C) 2012  F.D.E. Committee
+#This data file is free software - you can redistribute it and/or
+#modify it under the terms of the GNU General Public License as
+#published by the Free Software Foundation; either version 2 of the
+#license, or (at your option) any later version.
+#This data file is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY - without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General PUblic License for more details.
+#You should have received a copy of the GNU General PUblic License
+#along with this program - if not, write to the Free Software
+#Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+#Try also their web site: http://www.gnu.org/copyleft/gpl.html
+#
+# NOTE:  Fitted Data !!
+# A36 Steel Merged Data Sets from Refs. 1 and 2:
+# Ref.1: P.Dindinger report to Fat.Des.+Eval. Comm. Apr.2012
+# Ref.2: G.A.Miller and H.S.Reemsnyder, "Strain-Cycle Fatigue of Sheet and
+# Plate Steels I:  Test Method Development and Data Presentation,"
+# SAE Paper 830175, Detroit MI, Feb28-Mar.4, 1983
+#
+# NOTE that original test data ends at  2Nf = 1.3million.
+#
+#FileType= strain_life
+#DataType= fitted
+#TIMEcol= 0
+#NAME=  ASTM-A36
+#NAME=  Structural
+#NAME=  Steel
+#Stress_units= ksi
+#Strain_units= strain
+#Sy=    38.4 0.2pc offset, 265  mpa
+#Su=  69.  ksi from Miller/Reemsnyder = 475 mpa
+#eu=       0   #strain at Su not reported
+#E= 29528. ksi  = 203600 mpa
+#FractureStrain=  0 not reported
+#FractureStress=  0. not reported
+#monotonic_K= 0  not reported
+#monotonic_n= 0  not reported
+#BHN= 138.
+#%RA= 0. %  not reported
+#
+#saedigcurve_v2.2.f starts.
+# NOTE!! The Following Points are <b>FITTED DATA:</b>#NOTE!! Fitted Stress computed using Experm. K' and n'
+# Total Strain   2Nf  Stress  Mean   Plastic Strain   Initial
+#    Amp               Amp   Stress      Amp        Elastic Mod.
+#Original test data ends at  2Nf = 1.3million.
+#Points below are extrapolation:
+ #CHECK THESE Assumptions:
+ #Stress_units=ksi        Strain_units=strain     Life_units=reversals 
+ #EMOD=   29528.000      Sult=   69.000000      Syield=   38.400002      %RA=   0.0000000      Fracture_Stress=   0.0000000      Fracture_Strain=   0.0000000    
+ #Ford=           0  BHN=         138
+ #Material file ksi -> MPa.
+ #Material file: Reversals -> Cycles
+ #Took SigmaF_primed value =   794.96576      at N=0.5
+ #Took Frac.Strain value =  0.88485003      at N=0.5
+#xcalc1 Strain_Amp     Cycles  Stress_Amp  Elas_Str_Amp  Plas_Str_Amp  Smax*Str_Amp  Snominal_Amp
+#xcalc1  0.88485         0.5  795.0  0.00390  0.88095  0.7034255E+03 11967.0
+#xcalc1  0.00914      2500.0  359.2  0.00176  0.00738  0.3283243E+01   817.6
+#xcalc1  0.00665      5000.0  336.5  0.00165  0.00500  0.2237487E+01   674.9
+#xcalc1  0.00493     10000.0  315.1  0.00155  0.00338  0.1553396E+01   562.4
+#xcalc1  0.00344     25000.0  289.6  0.00142  0.00202  0.9961548E+00   450.3
+#xcalc1  0.00270     50000.0  271.0  0.00133  0.00137  0.7316028E+00   385.9
+#xcalc1  0.00217    100000.0  253.7  0.00125  0.00092  0.5505879E+00   334.8
+#xcalc1  0.00169    250000.0  233.0  0.00114  0.00055  0.3938424E+00   283.2
+#xcalc1  0.00144    500000.0  217.9  0.00107  0.00037  0.3137391E+00   252.7
+#xcalc1  0.00125   1000000.0  204.1  0.00100  0.00025  0.2551061E+00   227.9
+#xcalc1  0.00106   2500000.0  186.8  0.00092  0.00014  0.1980589E+00   200.8
+ getL2S-S:   188.50000       175.39856      9.95046808E-04           1
+ getL2S-S:   249.00000       215.83516      1.41098932E-03           1
+ TensSkeleton:   215.83516      1.41098932E-03  -134.96196     -5.79104293E-04 Nom:   249.00000      -128.00000    
+ getSwatl:  0.21476609       1864738.6    
+ getStrl:  9.95046808E-04  -2500000.0    
+ getStsl:   175.39856      -2500000.0      Sts
+ getStsl:   191.69191       1916544.3      Goo
+ getStsl:   184.79849      -2500000.0      Mor
+ getL2S-S:   152.00000       141.43546      8.02372000E-04           2
+ getL2S-S:   152.00000       141.43546      8.02372000E-04           2
+ NonSkeleton tips:   147.90895      1.02563971E-03  -134.96196     -5.79104293E-04   Nom:   176.00000      -128.00000      loop=           2
+ getSwatl:  0.11867800      -2500000.0    
+ getStrl:  8.02372000E-04  -2500000.0    
+ getStsl:   141.43546      -2500000.0      Sts
+ getStsl:   143.38655      -2500000.0      Goo
+ getStsl:   142.59663      -2500000.0      Mor
+ getL2S-S:   88.000000       81.883682      4.64531156E-04           3
+ getL2S-S:   152.00000       141.43546      8.02372000E-04           3
+ NonSkeleton tips:   147.90895      1.02563971E-03  -15.858414      9.65773943E-05   Nom:   176.00000     -3.33999992E-06  loop=           3
+ getSwatl:  6.87083155E-02  -2500000.0    
+ getStrl:  4.64531156E-04  -2500000.0    
+ getStsl:   81.883682      -2500000.0      Sts
+ getStsl:   95.079239      -2500000.0      Goo
+ getStsl:   89.300461      -2500000.0      Mor
+ getL2S-S:   63.849998       59.412193      3.37049016E-04           4
+ getL2S-S:   140.00000       130.26949      7.39026815E-04           4
+ NonSkeleton tips:   125.57701      8.98949336E-04   6.7526245      2.24851305E-04   Nom:   152.00000       24.299999      loop=           4
+ getSwatl:  4.23256084E-02  -2500000.0    
+ getStrl:  3.37049016E-04  -2500000.0    
+ getStsl:   59.412193      -2500000.0      Sts
+ getStsl:   69.009972      -2500000.0      Goo
+ getStsl:   64.805977      -2500000.0      Mor
+ getL2S-S:   60.799999       56.574181      3.20948777E-04           5
+ getL2S-S:   143.00000       133.06097      7.54863140E-04           5
+ NonSkeleton tips:   131.15999      9.30621987E-04   18.011627      2.88724434E-04   Nom:   158.00000       36.400002      loop=           5
+ getSwatl:  4.20956388E-02  -2500000.0    
+ getStrl:  3.20948777E-04  -2500000.0    
+ getStsl:   56.574181      -2500000.0      Sts
+ getStsl:   67.092949      -2500000.0      Goo
+ getStsl:   62.431686      -2500000.0      Mor
+ Debug totdams:  5.36268203E-07   0.0000000       0.0000000      5.21772449E-07   0.0000000    
+ Debug %dams:   0.0000000       100.00000       0.0000000       100.00000       0.0000000    
+ Debug %dams:   0.0000000       0.0000000       0.0000000       0.0000000       0.0000000    
+ Debug %dams:   0.0000000       0.0000000       0.0000000       0.0000000       0.0000000    
+ Debug %dams:   0.0000000       0.0000000       0.0000000       0.0000000       0.0000000    
+ Debug %dams:   0.0000000       0.0000000       0.0000000       0.0000000       0.0000000    
+# ASTM-A36   Structural BHN=   138 Fn=    0
+#xcalc2 Loop   Smax    Smin         N  Sigmax  Sigmin Delta Epsmax Epsmin DeltaEps  %Eps %SWaT %Sts %Morr %Goodm 
+#xcalc2    1   249.0  -128.0        1.0   216.  -135.  351. 0.00141 -.00058 0.00199   0.0 100.0   0.0   0.0 100.0
+#xcalc2    2   176.0  -128.0        1.0   148.  -135.  283. 0.00103 -.00058 0.00160   0.0   0.0   0.0   0.0   0.0
+#xcalc2    3   176.0    -0.0        1.0   148.   -16.  164. 0.00103 0.00010 0.00093   0.0   0.0   0.0   0.0   0.0
+#xcalc2    4   152.0    24.3        2.0   126.     7.  119. 0.00090 0.00022 0.00067   0.0   0.0   0.0   0.0   0.0
+#xcalc2    5   158.0    36.4        2.0   131.    18.  113. 0.00093 0.00029 0.00064   0.0   0.0   0.0   0.0   0.0
+#xcalc3  StrainLife_Reps SWaT_Life_Reps StressLife_Reps   Morrow_Reps   Goodman_Reps (Reps= Repetions)
+#xcalc3  Infinity         1864738.6      Infinity        Infinity        Infinity  
+ #debug Plot loop for Stress Amp:    215.83516    
+    Amplitudes        Ampl.*2
+ 0.00000    0.0 0.00000    0.0
+ 0.00106  186.8 0.00212  373.7
+ 0.00125  204.1 0.00250  408.2
+ 0.00141  215.8 0.00282  431.7
+#plotloops
+#plotloops #Tensile Skeleton curve
+#plotloops  0.00000      0.0
+#plotloops  0.00106    186.8
+#plotloops  0.00125    204.1
+#plotloops  0.00141    215.8
+ #debug Plot loop for Stress Amp:    175.39856    
+    Amplitudes        Ampl.*2
+ 0.00000    0.0 0.00000    0.0
+ 0.00100  175.4 0.00199  350.8
+#plotloops
+#plotloops #Tensile side of loop    1
+#plotloops -0.00058   -135.0
+#plotloops  0.00141    215.8
+#plotloops #Compressive side of loop    1
+#plotloops  0.00141    215.8
+#plotloops -0.00058   -135.0
+ #debug Plot loop for Stress Amp:    141.43546    
+    Amplitudes        Ampl.*2
+ 0.00000    0.0 0.00000    0.0
+ 0.00080  141.4 0.00160  282.9
+#plotloops
+#plotloops #Tensile side of loop    2
+#plotloops -0.00058   -135.0
+#plotloops  0.00103    147.9
+#plotloops #Compressive side of loop    2
+#plotloops  0.00103    147.9
+#plotloops -0.00058   -135.0
+ #debug Plot loop for Stress Amp:    81.883682    
+    Amplitudes        Ampl.*2
+ 0.00000    0.0 0.00000    0.0
+ 0.00046   81.9 0.00093  163.8
+#plotloops
+#plotloops #Tensile side of loop    3
+#plotloops  0.00010    -15.9
+#plotloops  0.00103    147.9
+#plotloops #Compressive side of loop    3
+#plotloops  0.00103    147.9
+#plotloops  0.00010    -15.9
+ #debug Plot loop for Stress Amp:    59.412193    
+    Amplitudes        Ampl.*2
+ 0.00000    0.0 0.00000    0.0
+ 0.00034   59.4 0.00067  118.8
+#plotloops
+#plotloops #Tensile side of loop    4
+#plotloops  0.00022      6.8
+#plotloops  0.00090    125.6
+#plotloops #Compressive side of loop    4
+#plotloops  0.00090    125.6
+#plotloops  0.00022      6.8
+ #debug Plot loop for Stress Amp:    56.574181    
+    Amplitudes        Ampl.*2
+ 0.00000    0.0 0.00000    0.0
+ 0.00032   56.6 0.00064  113.1
+#plotloops
+#plotloops #Tensile side of loop    5
+#plotloops  0.00029     18.0
+#plotloops  0.00093    131.2
+#plotloops #Compressive side of loop    5
+#plotloops  0.00093    131.2
+#plotloops  0.00029     18.0
+#plothist
+#plothist         0.1      249.00
+#plothist         1.0      249.00
+#plothist         1.0     -128.00
+#plothist         0.1     -128.00
+#plothist         0.1      249.00
+#plotdam         0.3  100.0    0.0
+#plothist
+#plothist         1.0      176.00
+#plothist         2.0      176.00
+#plothist         2.0     -128.00
+#plothist         1.0     -128.00
+#plothist         1.0      176.00
+#plotdam         1.4    0.0    0.0
+#plothist
+#plothist         2.0      176.00
+#plothist         3.0      176.00
+#plothist         3.0       -0.00
+#plothist         2.0       -0.00
+#plothist         2.0      176.00
+#plotdam         2.4    0.0    0.0
+#plothist
+#plothist         3.0      152.00
+#plothist         5.0      152.00
+#plothist         5.0       24.30
+#plothist         3.0       24.30
+#plothist         3.0      152.00
+#plotdam         3.9    0.0    0.0
+#plothist
+#plothist         5.0      158.00
+#plothist         7.0      158.00
+#plothist         7.0       36.40
+#plothist         5.0       36.40
+#plothist         5.0      158.00
+#plotdam         5.9    0.0    0.0

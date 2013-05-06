@@ -1,0 +1,9 @@
+./getMmMb 0.0 > t_MmMb_Surflaw_00
+./getMmMb 90 > t_MmMb_Surflaw_90
+./getMmMb 45 > t_MmMb_Surflaw_45
+cp t_MmMb_Surflaw_90 t_MmMb_Surflaw_90a
+cp t_MmMb_Surflaw_90 t_MmMb_Surflaw_90b
+cp t_MmMb_Surflaw_45 t_MmMb_Surflaw_45a
+cp t_MmMb_Surflaw_45 t_MmMb_Surflaw_45b
+cp t_MmMb_Surflaw_00 t_MmMb_Surflaw_00a
+cp t_MmMb_Surflaw_00 t_MmMb_Surflaw_00b

@@ -1,0 +1,128 @@
+
+
+#<html><title>Material + Cycles File</title><body>
+#<FORM METHOD="POST" ACTION="http://mme.uwaterloo.ca/cgi-bin/catsaefcalc3">
+#<DL compact> <h3>1. Your Material (Digital-Fitted Curves):</h3>
+#<br><pre><textarea rows=10 cols=90 name="#SAE_Standard_File" >
+#  Copyright (C) 1999  University of Waterloo and F.A. Conle This data file
+# is free software; you can redistribute it and/or modify it under the terms
+# of the GNU General Public License as published by the Free Software Founda-
+# tion; either version 2 of the license, or (at your option) any later version.
+#
+#  This data file is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General PUblic License for
+#  more details.
+#
+#  You should have received a copy of the GNU General PUblic License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+#  Try also their web site: http://www.gnu.org/copyleft/gpl.html
+#
+#Fn= 449       SHR
+# CSA G40.21-50A, Stelco Struct. Steel, or ASTM-A588 Grade C, tested
+# transv. to rolling dir., 23%elong in 8in., Round samples, threaded,
+# polished with emery paper. 0.12C, 1.07Mn .008P .028S .25Si .29Cu .31Ni
+# 0.37Cr 0.02V,  Ref. F.A.Conle, PhD thesis U.ofWaterloo, 1979.
+# Hb 160 estimated
+#
+#FileType= strain_life
+#DataType= fitted
+#TIMEcol= 0
+#NAME=  ASTM-A588C
+#NAME=  G40.21-50A
+#Stress_units= ksi
+#Strain_units= strain
+#Su=       78.00
+#Sy=       53.00
+#E=       30000.
+#%RA=   66.9
+#BHN= 160.
+#NO. FAT. PTS.=  15
+# Last point is a runout
+#Tot Strain    2Nf  Stress  Mean   Plastic Strain   Initial
+#  Amp               Amp   Stress      Amp        Elastic Mod.
+# ASTM-A588C G40.21-50A BHN=  160 Fn=    0
+#          Monotonic Props.       Cyclic Props.
+#ELAS. MOD.= 30000. KSI,  207. GPA     K'        = 161.2 KSI,  1111.MPA
+#YIELD,0.2%=    53. KSI,  365. MPA     N'        = 0.1784
+#ULT. STRG.=    78. KSI,  538. MPA     F. STRG COEF=  114.9 KSI,  792.MPA
+#K       =      0.0 KSI,      0. MPA   F.STRG EXP, b=-0.0733
+#N            = 0.0000                 FAT DUCT COEF=   0.1498
+#RED. IN AREA = 66.9                   F.DUCT EXP, c=-0.4108
+#T. FRAC. STG.=   0.0 KSI,    0. MPA   Exp Cyc Yld  =   53. Ksi, 367.MPA
+#T. FRAC. STR.= 0.000                  Fit Cyc Yld  =   53. Ksi, 367.MPA
+#No. fatigue data points=   15
+#
+# NOTE!! The Following Points are <b>FITTED DATA:</b>
+#UNITS= KSI
+#Stress_Units= KSI
+# Total Strain   2Nf  Stress  Mean   Plastic Strain   Initial
+#    Amp               Amp   Stress      Amp        Elastic Mod.
+   0.15361          1   114.9      0.   0.14978     30000. #Fitted_point
+   0.11630          2   109.2      0.   0.11266     30000. #Fitted_point
+   0.08072          5   102.1      0.   0.07732     30000. #Fitted_point
+   0.06139         10    97.0      0.   0.05816     30000. #Fitted_point
+   0.04682         20    92.2      0.   0.04375     30000. #Fitted_point
+   0.03290         50    86.2      0.   0.03002     30000. #Fitted_point
+   0.02532        100    82.0      0.   0.02258     30000. #Fitted_point
+   0.01958        200    77.9      0.   0.01699     30000. #Fitted_point
+   0.01409        500    72.8      0.   0.01166     30000. #Fitted_point
+   0.01108       1000    69.2      0.   0.00877     30000. #Fitted_point
+   0.00879       2000    65.8      0.   0.00660     30000. #Fitted_point
+   0.00658       5000    61.5      0.   0.00453     30000. #Fitted_point
+   0.00535      10000    58.5      0.   0.00341     30000. #Fitted_point
+   0.00441      20000    55.6      0.   0.00256     30000. #Fitted_point
+   0.00349      50000    52.0      0.   0.00176     30000. #Fitted_point
+   0.00297     100000    49.4      0.   0.00132     30000. #Fitted_point
+   0.00256     200000    47.0      0.   0.00099     30000. #Fitted_point
+   0.00215     500000    43.9      0.   0.00068     30000. #Fitted_point
+   0.00190    1000000    41.7      0.   0.00051     30000. #Fitted_point
+   0.00171    2000000    39.7      0.   0.00039     30000. #Fitted_point
+   0.00161    3000000    37.8      0.   0.00034     30000. #Fitted_point
+   0.00161   15504000    37.8      0.   0.00034     30000. #Fitted_point
+# The last two points are entered manually based on the data of original
+# file that contained a runout.
+#</textarea></DL></pre>
+  
+#<h3>2. <input value="1.0" size=20 name="#MagFactor">History Magnification or Multiplication factor</h3> 
+
+
+
+#<h3>3. Enter Elastic Kt*Nominal (or Finite Element)  Stress History (Rainflow counted cycle sets)  Below:</h3> <b>MPa ! </b>
+ 
+<ul>
+  <li>Cycle Set #1 :
+       Smax<input type="TEXT" value="1200" size=6 name="xyz"> 
+       Smin<input type="TEXT" value="-600" size=6 name="xyz"> 
+       Cycles<input type="TEXT" value="1" size=20 name="xyz">
+
+  <li>Cycle Set #2 :
+       Smax<input value="" size=6 name="xyz"> 
+       Smin<input value="" size=6 name="xyz"> 
+       Cycles<input value="" size=20 name="xyz">
+
+  <li>Cycle Set #3 :
+       Smax<input value="" size=6 name="xyz"> 
+       Smin<input value="" size=6 name="xyz"> 
+       Cycles<input value="" size=20 name="xyz">
+
+  <li>Cycle Set #4 :
+       Smax<input value="" size=6 name="xyz"> 
+       Smin<input value="" size=6 name="xyz"> 
+       Cycles<input value="" size=20 name="xyz">
+
+  <li>Cycle Set #5 :
+       Smax<input value="" size=6 name="xyz"> 
+       Smin<input value="" size=6 name="xyz"> 
+       Cycles<input value="" size=20 name="xyz">
+
+  <li>Cycle Set #6 :
+       Smax<input value="" size=6 name="xyz"> 
+       Smin<input value="" size=6 name="xyz"> 
+       Cycles<input value="" size=20 name="xyz">
+</ul>
+
+#<h3> 4. <input type="submit" value=" CALCULATE "> <i>(Page will be submitted to UoWaterloo Website)</i></h3>
+#</FORM><hr> </body></html>
+

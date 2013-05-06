@@ -1,0 +1,8 @@
+#NAME= G40.21-50A  
+#DELTAKUNITS= ksi_in  # specify:   mpa_m   or   ksi_in  or  map_mm
+#DADNUNITS=   inch    # specify:   meter   or    inch   or   mm
+#dKth=  18.0       # threshold stress intensity value
+#dKc=  100.0       # Upper cut-off or Paris equation, or KIc
+#A= 5.0E-09        # Paris co-efficient
+#m= 1.90           # Paris exponent
+
