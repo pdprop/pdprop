@@ -1,0 +1,559 @@
+#!/bin/bash
+#
+# setup2  vers 2.0  local (in this folder) command script to help user 
+#          manage the files required to run plateLongSurfFlaw.f.v3.06
+# Usage:   ./setup2
+
+#  Copyright (C) 2012  Al Conle
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the license, or (at
+# your option) any later version.
+#  This  file is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTA-
+# BILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#  You should have received a copy of the GNU General PUblic License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place -Suite 330, Boston, MA 02111-1307, USA. Try also their
+# web site: http://www.gnu.org/copyleft/gpl.html
+
+# vers 2.0 adds in the FAD check for a tensile test file which is used to
+#          create the "fads.table" file. Jul23 2013
+
+TMP2=/tmp/temp222.$$
+#dadn=temp.dadn
+
+alias ls     "ls -lt | head -12"
+alias lstl   "ls -lt | head -30"
+
+echo
+echo
+echo "--------------------   setup2  --------------------------------------------"
+echo 
+echo "This bash command script helps the user prepare the files for the simulation run."
+echo "         (with experience you probably won't need to use this)"
+echo
+echo "The following files are needed:                  (for format info see Manual)"
+echo "          0  pdprop.env  file: contains run-time info & instructions for sim."
+echo "          1  load history file  "
+echo "          2  da/dn vs deltaK:  a table file,  or the Paris eq. constants"
+echo "          3  strain-stress-life crack initiation file. (if you want initiation)"
+echo "          4  Tensile test strain-stress file for FAD's.(if you want FAD)"
+echo "Also the values for the geometry:  B, intial a, L, PmEOL, PbEOL"
+echo
+echo "If you have all the above items we can proceed. If not, type \"ctrl c\" to quit."
+echo "(If things are unclear click on the \"Manual_plateLongflaw.html\" file)"
+echo
+while true; do
+    read -p "Do you wish to proceed? :" yn
+    case $yn in
+        [Yy]* )  echo "reply was Y or y"; break
+              ;;   # use this to delimit each case
+        [Nn]* ) 
+                echo "reply was N or n"
+                exit
+              ;;
+        * )     echo "Please answer y or n or yes or no.";
+              ;;
+    esac
+done
+echo "Ok,    ---------------------------------------------------"
+
+echo "Making a copy of your pdprop.env file   in   pdprop.env.user"
+echo "            cp pdprop.env  pdprop.env.user"
+cp pdprop.env  pdprop.env.user
+echo "Converting from possible DOS file to Linux..."
+echo "           dos2unix  pdprop.env"
+dos2unix pdprop.env
+echo
+echo "Checking TYPE..."
+grep -i ^\#TYPE\= pdprop.env |tail -1   >$TMP2
+read <$TMP2 item1 item2 LEFTOVER
+if [ "$item2" = "plate_long_surface_flaw" ]; then
+   echo "The type of simulation is ok:  $item1 $item2"
+#         This works too:   echo "The type of simulation is ok: " $item1 $item2
+else
+   echo "Error: pdprop.env file has wrong  #TYPE= " $item2
+   echo "      Should be #TYPE= plate_long_surface_flaw"
+   echo "      Please correct your    pdprop.env   file."
+   exit 1
+fi
+
+echo; echo "Check for 1=ON  0=OFF  Stress Intensity Factors:"
+    grep ^\#ACTIVATE_MmMb\= pdprop.env | tail -1 >$TMP2
+       read <$TMP2 item1 item2 LEFTOVER
+       echo "Check Factor MmMb     : $item1 $item2";
+    grep ^\#ACTIVATE_MkmMkb\= pdprop.env | tail -1 >$TMP2
+       read <$TMP2 item1 item2 LEFTOVER
+       echo "Check Factor MkmMkb   : $item1 $item2";
+    grep ^\#ACTIVATE_fw\= pdprop.env | tail -1 >$TMP2
+       read <$TMP2 item1 item2 LEFTOVER
+       echo "Check Factor fw       : $item1 $item2";
+
+echo; echo; echo "Checking geometry descriptors in pdprop.env:"
+echo "(all dimensions are mm)";echo
+    grep ^\#B\= pdprop.env | tail -1 >$TMP2
+     read <$TMP2 item1 item2 LEFTOVER
+     echo "Check for #B=            : $item1 $item2";
+
+    grep ^\#W\= pdprop.env | tail -1 >$TMP2
+     read <$TMP2 item1 item2 LEFTOVER
+     echo "Check for #W=            : $item1 $item2 ";
+
+#    grep ^\#ri\= pdprop.env | tail -1 >$TMP2
+#     read <$TMP2 item1 item2 LEFTOVER
+#     echo "Check for #ri=           : $item1 $item2";
+
+    grep ^\#azero\= pdprop.env | tail -1 >$TMP2
+     read <$TMP2 item1 item2 LEFTOVER
+     echo "Check for #azero=        : $item1 $item2";
+
+#    grep ^\#czero\= pdprop.env | tail -1 >$TMP2
+#     read <$TMP2 item1 item2 LEFTOVER
+#     echo "Check for #czero=        : $item1 $item2";
+
+    grep ^\#L\= pdprop.env | tail -1 >$TMP2
+     read <$TMP2 item1 item2 LEFTOVER
+     echo "Check for #L=            : $item1 $item2 ";
+     echo "(if more than one line of each exists, only the last one is shown)"
+
+echo
+while true; do
+    read -p "Are these values OK with you? :" yn
+    case $yn in
+        [Yy]* )  break;;
+        [Nn]* ) echo "Please edit the  pdprop.env file"; exit;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+echo
+echo "Ok   ----------------------------------------------"
+
+
+echo
+echo "Checking load or stress history information in pdprop.env..."
+#grep ^\#HISTORYFILE\= pdprop.env | { read item1 file remainder ; }
+#The above doesnt work. read does not like pipes
+grep ^\#HISTORYFILE\= pdprop.env | tail -1  > $TMP2
+read <$TMP2 item1  file LEFTOVER
+echo "found:   " $item1  $file ;
+    if [ -s "$file" ]; then
+	    echo " $file exists and has a size greater than zero."
+    else
+	    echo " $file not found. Check pdprop.env for correct filename."
+            exit 1
+    fi
+
+    if [ -r "$file" ]; then
+       echo "  $file has read permission"
+    else
+       echo " $file does not have read permission. Changing..."
+       echo "       chmod 744  $file"
+       chmod 744 $file
+    fi
+echo "Converting from possible DOS file to Linux..."
+echo "           dos2unix  $file"
+dos2unix  $file
+echo "#Your history file exists: You should be able to use it in the simulation call."
+echo
+echo
+ grep ^\#MAGFACTOR_m\= pdprop.env | tail -1 >$TMP2
+    read <$TMP2 item1 item2 LEFTOVER
+    echo "Check for #MAGFACTOR_m=         : $item1 $item2";
+ grep ^\#MAGFACTOR_b\= pdprop.env | tail -1 >$TMP2
+    read <$TMP2 item1 item2 LEFTOVER
+    echo "Check for #MAGFACTOR_b=         : $item1 $item2";
+ grep ^\#MEANADD_m\= pdprop.env | tail -1 >$TMP2
+    read <$TMP2 item1 item2 LEFTOVER
+    echo "Check for #MEANADD_m=           : $item1 $item2";
+ grep ^\#MEANADD_b\= pdprop.env | tail -1 >$TMP2
+    read <$TMP2 item1 item2 LEFTOVER
+    echo "Check for #MEANADD_b=           : $item1 $item2";
+echo
+ grep ^\#MAXREPS\= pdprop.env | tail -1 >$TMP2
+    read <$TMP2 item1 item2 LEFTOVER
+    echo "Check for #MAXREPS=           : $item1 $item2";
+echo
+while true; do
+    read -p "Are these history values OK with you? :" yn
+    case $yn in
+        [Yy]* )  break;;
+        [Nn]* ) echo "Please edit the  pdprop.env file"; exit;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
+echo "OK    ------------------------------------------------"
+echo
+echo "Checking for strain-stress-life fitted filename in pdprop.env..."
+grep ^\#MATERIAL\= pdprop.env | tail -1   > $TMP2
+read <$TMP2 item1  fileMat LEFTOVER
+echo "found:   " $item1  $fileMat ;
+if [ $fileMat != "none" ]; then
+    if [ -s "$fileMat" ]; then
+            echo " $fileMat exists and has a size greater than zero."
+    else
+            echo "Error: file= $fileMat not found. Check pdprop.env for correct filename."
+            exit 1
+    fi
+    if [ -r "$fileMat" ]; then
+       echo "  $fileMat has read permission"
+    else
+       echo "  $fileMat does not have read permission. Changing."
+       echo "   chmod 744 $fileMat"
+       chmod 744 $fileMat
+    fi
+    
+    echo "Converting from possible DOS file to Linux..."
+    echo "           dos2unix  $fileMat"
+    dos2unix $fileMat
+
+    echo "Your material strain-stress-life crack initiation file exists: "
+    echo "I will now copy it to its runtime standard input location..."
+    echo "        cp  $fileMat matfile " 
+    cp $fileMat matfile
+    echo "and make a user back up:"
+    echo "        cp $fileMat $fileMat.user"
+    cp $fileMat $fileMat.user
+
+else
+#   There is no material strain-stress-life file
+    echo "There is no strain-stress-life  file named in pdprop.env"
+    echo "#none= none" >matfile
+fi
+
+echo
+echo
+echo "Checking on da/dn information..."
+grep ^\#DADN\= pdprop.env 
+grep ^\#DADN\= pdprop.env |tail -1 >$TMP2
+   read <$TMP2 item1 item2 LEFTOVER
+
+case "$item2" in
+     table) 
+          echo "Your da/dn information is expected in a table in a file"
+#         fetch the da/dn table filename:
+          grep ^\#DADN_TABLE\= pdprop.env | tail -1 >$TMP2
+          read <$TMP2 item1 dadnfile LEFTOVER
+#           Is file exist, etc?
+          echo "found:   " $item1  $dadnfile ;
+              if [ -s "$dadnfile" ]; then
+                      echo " $dadnfile exists and has a size greater than zero."
+              else
+                      echo " $dadnfile not found. Check pdprop.env for correct filename."
+                      exit 1
+              fi
+              if [ -r "$dadnfile" ]; then
+                 echo "  $dadnfile file has read permission. "
+              else
+                 echo "  $dadnfile file does not have read permission. Changing..."
+                 echo "   chmod 744 $dadnfile"
+                 chmod 744 $dadnfile
+              fi
+          echo "Converting from possible DOS file to Linux..."
+          echo "           dos2unix  $dadnfile"
+          dos2unix $dadnfile
+          echo "#Your da/dn table file exists: the simulation should be "
+          echo "           able to use  it in the simulation call."
+          echo "# I'm placing a backup copy into a file:  $dadnfile.user"
+              cp $dadnfile  $dadnfile.user
+          echo
+
+          echo "#Checking the #DADNUNITS=  value in  $dadnfile..."
+#         Check that the units in the user's table file are  mpa_mm
+          echo >$TMP2
+          grep -i ^\#DADNUNITS\=  $dadnfile
+          grep -i ^\#DADNUNITS\=  $dadnfile  | tail -1   >$TMP2
+          #make sure line in $TMP2  is ok:
+          read <$TMP2  item1 item2 LEFTOVER
+          if [ "x$item1" !=  "x#DADNUNITS=" -a "x$item1" != "x#dadnunits="  -a  \
+               "x$item1" !=  "x#DadnUnits=" -a "x$item1" != "x#dadnUnits=" ]; then
+#            see:  http://tldp.org/LDP/abs/html/comparison-ops.html  for info on above.
+#                  The reason its called bash is cause you wanna bash your head on a door.
+             echo "Error: Cannot find #DADNUNITS=  in your file $dadnfile"
+             exit 1
+          fi
+          echo "found : $item1 $item2"
+          case $item2 in
+            mm ) echo "Units of   mm  are OK."
+          ;;
+          esac
+
+          echo
+          echo "#Checking the #DELTAKUNITS=  value in  $dadnfile..."
+#         Check that the units in the user's table file are  mpa_mm
+          echo >$TMP2
+          grep -i ^\#DELTAKUNITS\=  $dadnfile
+          grep -i ^\#DELTAKUNITS\=  $dadnfile  | tail -1   >$TMP2
+          #make sure line in $TMP2  is ok:
+          read <$TMP2  item3 item4 LEFTOVER
+          if [ "x$item3" !=  "x#DELTAKUNITS=" -a "x$item3" != "x#deltaKunits="  -a  \
+               "x$item3" !=  "x#DeltaKUnits=" -a "x$item3" != "x#deltaKUNITS=" ]; then
+             echo "Error: Cannot find #DELTAKUNITS=  in your file $dadnfile"
+             exit 1
+          fi
+          echo "found : $item3 $item4"
+          case $item4 in
+            mpa_mm ) echo "Units of mpa_mm are OK."
+          ;;
+          esac
+
+          if [ "x$item2" != "xmm" -a "x$item4" != "xmpa_mm" ]; then
+                echo "Your dadnunits are not \"mm\" or deltaKunits are not \"mpa_mm\" "
+                echo "Attempting to convert your table to mm/cycle and mpa_mm units... "
+                echo "       rm temp"
+                echo "       ../convert2MPa_mm < $dadnfile >temp"
+                rm temp
+                ../convert2MPa_mm < $dadnfile >temp
+                echo "The converted file (in file \"temp\") looks like this:"
+                cat temp
+             while true; do
+               read -p "Is this file OK with you? :" yn
+               case $yn in
+                   [Yy]* )
+                     mv temp $dadnfile
+                     echo $dadnfile has been changed
+                     break
+                   ;;
+                   [Nn]* ) echo "Hmm,  ok you could edit your $dadnfile  or";
+                        echo "you could reprogram \"convert2MPa_mm.f\" to get the"
+                        echo "desired results, and recompile it."
+                        echo "(convert2MPa_mm.f is located in the folder above this one.)"
+                        exit
+                   ;;
+                      * ) echo "Please answer yes or no.";;
+                 esac
+             done
+          fi
+
+          echo "Ok.       --------------------------------------------"
+          echo "Copying your table file to standard location..."
+          echo "cp $dadnfile  dadnTable"
+          cp $dadnfile  dadnTable
+     ;;
+
+     Paris) 
+        echo "Your da/dn inform. is expected in  Paris equation parameters"
+        echo "The simulation uses a table form, thus we will convert..."
+        grep ^\#DADN_PARIS\= pdprop.env 
+        grep ^\#DADN_PARIS\= pdprop.env | tail -1 >$TMP2
+        read <$TMP2  item1 item2 item3 item4 item5 item6 item7  LEFTOVER
+        echo "Found dKth=  $item2, A= $item3, m= $item4, dKc= $item5, "
+        echo "Found deltaKunits= $item6,  dadnunits= $item7"
+        echo "    deltaKunits must be: mpa_mm, mpa_m, or ksi_in  only."
+        case $item6 in
+            mpa_mm )  echo "      found:   $item6"
+            ;;
+            mpa_m ) echo "      found:   $item6"
+            ;;
+            ksi_in ) echo "      found:   $item6"
+            ;;
+            * ) echo 
+                echo "Error: your Paris Eq. units are unknown.  You will need to convert  "
+                echo "  the data (constants) in  the   pdprop.env   file."
+                exit 1
+            ;;
+        esac
+
+        echo "    dadnunits must be  : mm,   meter,  or   inch   only."
+        case $item7 in
+            mm )  echo "      found:   $item7"
+            ;;
+            m ) echo "      found:   $item7"
+            ;;
+            inch ) echo "      found:   $item7"
+            ;;
+            * ) echo 
+                echo "Error: your Paris Eq. units are unknown.  You will need to convert  "
+                echo "  the data (constants) in  the   pdprop.env   file."
+                exit 1
+            ;;
+        esac
+
+        echo "Ok, Creating a *.paris file called: temp.paris ..."
+        echo "#NAME= temp.dadn"  >temp.paris
+        echo "#DELTAKUNITS= $item6"  >>temp.paris
+        echo "#DADNUNITS= $item7"  >>temp.paris
+        echo "#dKth= $item2 (ignored in table file)"  >>temp.paris
+        echo "#A=    $item3 (ignored in table file) "    >>temp.paris
+        echo "#m=    $item4 (ignored in table file) "    >>temp.paris
+        echo "#dKc=  $item5   (ignored in table file) " >>temp.paris
+
+        echo "Running Paris -> Table conversion program \"convertParis2table\"..."
+        echo  "     ../convertParis2table  <temp.paris   >temp.dadn"
+        ../convertParis2table  <temp.paris   >temp.dadn
+        echo
+        echo  "Here is the resulting file temp.dadn :"
+        cat temp.dadn
+
+        echo
+        echo     
+        echo "(only the first two columns of each line are used)"
+        echo "You can plot this file, in gnuplot, with the command:"
+        echo "              set grid; set logscale xy"
+        echo "              plot \"temp.dadn\" using  1:2 with linespoints"
+        echo "or, for the plot, simply:"
+        echo "              plot \"temp.dadn\" u 1:2 w lp"
+        echo
+        while true; do
+            read -p "When you wish to proceed type y :" yn
+            case $yn in
+                [Yy]* )  echo "reply was Y or y"; break
+                      ;;
+                * )     echo "Please answer: y";
+                      ;;
+            esac
+        done
+        echo
+        echo "Ok,         -----------------------------------------------"
+        echo "I will now copy this temp file to the runtime file: dadnTable"
+        echo "       cp temp.dadn   dadnTable"
+#        cp temp.dadn   dadnTable.setup
+        cp temp.dadn   dadnTable
+        echo
+        echo "Updating the   pdprop.env   file to use the new dadnTable file..."
+        echo "#DADN= table                # can be \"table\"  or \"Paris\"" >replaceline.env
+        ../replaceline   <pdprop.env  >temp1
+        echo "#DADN_PARIS= $item2 $item3 $item4 $item5 $LEFTOVER" > replaceline.env
+        ../replaceline   <temp1  >temp2
+        echo "#DADN_TABLE= temp.dadn             #filename" > replaceline.env
+        ../replaceline   <temp2  >pdprop.env
+        echo "NOTE!!: pdprop.env  has been updated to reflect table type input to sim."
+        rm temp1 temp2
+     ;;
+     * )
+        echo "Error: da/dn information not correct. Edit the pdprop.env file."
+        exit 1;
+     ;;
+esac
+
+echo "OK    ------------------------------------------------"
+echo
+echo "Checking for Tensile strain-stress  filename in pdprop.env..."
+grep -i  ^\#TensileFile\= pdprop.env | tail -1   > $TMP2
+read <$TMP2 item1  tensileFile  LEFTOVER
+echo "found:   " $item1  $tensileFile ;
+if [ $tensileFile != "none" ]; then
+    if [ -s "$tensileFile" ]; then
+            echo " $tensileFile exists and has a size greater than zero."
+    else
+            echo "Error: file= $tensileFile not found. Check pdprop.env for correct filename."
+            exit 1
+    fi
+    if [ -r "$tensileFile" ]; then
+       echo "  $tensileFile has read permission"
+    else
+       echo "  $tensileFile does not have read permission. Changing."
+       echo "   chmod 744 $tensileFile"
+       chmod 744 $tensileFile
+    fi
+
+    echo "Converting from possible DOS file to Linux..."
+    echo "           dos2unix  $tensileFile"
+    dos2unix $tensileFile
+
+    echo "Your Tensile strain-stress file exists: "
+    echo "Checking for other FAD parameters in pdprop.env file..."
+    grep -i ^\#PmEOL\= pdprop.env | tail -1 >$TMP2
+       read <$TMP2 item1 item2 LEFTOVER
+       echo "Check EOL Pm=       : $item1 $item2  mpa";
+
+    grep -i ^\#PbEOL\= pdprop.env | tail -1 >$TMP2
+       read <$TMP2 item1 item2 LEFTOVER
+       echo "Check EOL Pb=       : $item1 $item2  mpa";
+
+    grep -i ^\#Kmat\= pdprop.env | tail -1 >$TMP2
+       read <$TMP2 item1 item2 LEFTOVER
+       echo "Check Kmat=         : $item1 $item2  ";
+
+    grep -i ^\#PinJoint\= pdprop.env | tail -1 >$TMP2
+       read <$TMP2 item1 item2 LEFTOVER
+       echo "Check PinJoint=     : $item1 $item2  (0=No, 1=Yes)";
+    echo
+    echo
+    echo "Check tensile file requirements: ..."
+    grep -i ^\#NAME\= $tensileFile | head -1 >$TMP2
+       read <$TMP2 item1 item2 LEFTOVER
+       echo "Check 1st Name       : $item1 $item2";
+
+    grep -i ^\#Stress_units\= $tensileFile | tail -1 >$TMP2
+       read <$TMP2 item1 item2 LEFTOVER
+       echo "Check Sts units      : $item1 $item2";
+
+    grep -i ^\#Strain_units\= $tensileFile | tail -1 >$TMP2
+       read <$TMP2 item1 item2 LEFTOVER
+       echo "Check Strain units   : $item1 $item2";
+
+    grep -i ^\#Sy\= $tensileFile | tail -1 >$TMP2
+       read <$TMP2 item1 item2 LEFTOVER
+       echo "Check Yield          : $item1 $item2";
+
+    grep -i ^\#Su\= $tensileFile | tail -1 >$TMP2
+       read <$TMP2 item1 item2 LEFTOVER
+       echo "Check Ultim          : $item1 $item2";
+
+    grep -i ^\#E\= $tensileFile | tail -1 >$TMP2
+       read <$TMP2 item1 item2 LEFTOVER
+       echo "Check Modulus        : $item1 $item2";
+
+    echo
+    while true; do
+        read -p "Are these values OK with you? :" yn
+        case $yn in
+            [Yy]* )  break;;
+            [Nn]* ) echo "Please edit the  pdprop.env and/or Tensile file"; exit;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+    echo
+    echo "Ok   ------------------------------------------------------------"
+    echo
+    echo "I will now create the fads.table  runtime file..."
+    echo "          ../getFADs < $tensileFile >fads.table"
+    ../getFADs < $tensileFile >fads.table
+    echo "Using the gnuplot command "
+    echo "           load \"plotFADs\" "
+    echo "you can plot the new data in    fads.table   file"
+
+else
+#   There is no material strain-stress file
+    echo "There is no Tensile strain-stress  file named in pdprop.env"
+    echo "#none= none" > fads.table
+fi
+echo "----------------------------------------------------------------------"
+
+echo
+
+echo
+echo "Checking for #BLOCKSKIP=  line..."
+grep -i ^\#BLOCKSKIP\=  pdprop.env | tail -1  >$TMP2
+read <$TMP2 item1 item2 LEFTOVER
+echo "Ok,  a #BLOCKSKIP=  line exists. The damage diff. value is $item2 percent."
+echo
+echo "End of  setup check.   If all is well you can now run  commands like:"
+echo
+echo "              ./plateLongSurfFlaw  scaleFactor <loadHistory >outputFile"
+echo
+echo "eg.:          ./plateLongSurfFlaw   1.0 <load1.txt  >plate1.0"
+echo
+echo "eg.:          ./plateLongSurfFlaw   2.0 <load1.txt  >plate2.0"
+echo
+echo "Note:  if you have imported files from Windows systems you should probably"
+echo "       convert the DOS type text files to Linux format with the command:"
+echo "                         dos2unix  filename"
+echo "Note2: As your simulation is running you can observe the creation of the local"
+echo "       files with the commands:"
+echo "                     ls -lt | head"
+echo "or:"
+echo "                     ls -lt | head -20"
+echo 
+echo "After running the simulations you can prepare a report with the command:"
+echo "             ./makereport2 outputFile"
+echo " for each of your simulation output files."
+echo " The above script \"makereport2\" is located in this folder. You can edit it"
+echo "    to alter or add features."
+echo " Good luck"
+
+rm $TMP2
+exit
+

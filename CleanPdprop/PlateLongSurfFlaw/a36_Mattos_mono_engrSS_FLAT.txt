@@ -1,0 +1,97 @@
+#<html><head>
+#<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1"></head><body>
+#<title>Monotonic Data File format</title>
+#<form method="POST" action="http://mme.uwaterloo.ca/cgi-bin/catFADs">
+#<dl compact="compact"> Pick one:
+#<input name="#saeinput" value="FDE_plot" type="radio">FDE_plot
+#<input name="#saeinput" value="FDE_fit" checked="checked" type="radio">FDE_fit
+#<input value="Send for processing" type="submit">
+#<br><pre><textarea rows="50" cols="90" name="SAE_Standard_File">
+#Copyright (C) 2013  F.D.E. Committee
+#This data file is free software - you can redistribute it and/or
+#modify it under the terms of the GNU General Public License as
+#published by the Free Software Foundation; either version 2 of the
+#license, or (at your option) any later version.
+#This data file is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY - without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General PUblic License for more details.
+#You should have received a copy of the GNU General PUblic License
+#along with this program - if not, write to the Free Software
+#Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+#Try also their web site: http://www.gnu.org/copyleft/gpl.html
+
+# A36 Steel Hot Rolled
+# Machined from 5/8 inch hot rolled plate.
+# Ref.: R.J.Mattos, F.V.Lawrence, "Estimation of the Fatigue Crack Initiation
+#   Life in Welds Using Low Cycle Fatigue Concepts," Fracture Control Rep.19
+#   Univ. of Illinois, Oct. 1975.
+
+# NOTE!: For  BS7910 FADs required Tags are:
+#      #FileType=   #DataType=   #Sy=   #Su=   #E= 
+#      #Stress_units=     #Strain_units=
+#
+#FileType= strain_stress
+#DataType= engineering     #Can be "engineering" or "true" 
+#NAME= ASTM-A36
+#NAME= HotRolled
+#NAME= Steel
+#Stress_units= mpa
+#Strain_units= strain
+#Sy= 224. mpa = 32.5 ksi
+#Su= 414. mpa = 60.0 ksi
+#eu= 0.14  #strain at Su
+#E= 190000 mpa  27500 ksi
+#FractureStrain=  1.19
+#FractureStress=  952 mpa = 138 ksi
+#monotonic_K= 780 mpa, 113 ksi
+#monotonic_n= 0.258
+#BHN= 0. not reported
+#%RA= 69.7 %
+
+#From initial MattosStress-Strain plot
+0  0
+0.00036   72
+0.00073  143
+0.00146  224
+0.00206  220
+0.00274  224
+# 0.00371  229
+# 0.00474  230
+# 0.00647  229
+# 0.00750  230
+# 0.00956  230
+# 0.01121  232
+# 0.01253  238
+# 0.01367  243
+# 0.01470  252
+# 0.01608  264
+#From Mattos Stress vs Plastic strain 
+#(converted back to Engr.SS)
+#EngrStr   EngrSts_mpa
+0.00301   221
+0.00398   224
+0.00511   224
+0.00698   224
+0.00793   220
+0.00891   221
+0.00991   220
+0.01193   228
+0.01392   238
+0.01610   250
+0.02004   273
+0.02371   285
+0.02852   295
+0.03146   301
+0.03696   313
+0.04237   326
+0.05977   357
+0.07941   371
+0.09925   393
+0.11768   395
+0.13824   399
+0.15728   397
+0.17514   400 #Ultimate Stress
+#</textarea>
+#</pre></dl></form> </body></html>
+

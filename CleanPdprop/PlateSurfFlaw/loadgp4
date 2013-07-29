@@ -1,0 +1,24 @@
+set term pngcairo size 600,600 font "Arial,12"
+set grid
+set title "plateA36out2.0 History of Factors for Depth a and Surface c"
+set output "plateA36out2.0.factors.png"
+set xlabel "1/2 Cycles or Reversals"  
+set ylabel "Mm Mb Mkm Mkb  for each Reversal" 
+set label "  a_Mm"  at 497877,1.0944
+set label "  a_Mb"  at 497877,0.7986
+set label "     c_Mm" at 497877,0.6232
+set label "     c_Mb" at 497877,0.5712
+set label "  a_Mkm"  at 497877,1.0000
+set label "  a_Mkb"  at 497877,1.0000
+set label "     c_Mkm" at 497877,2.0006
+set label "     c_Mkb" at 497877,1.8415
+set label "  fw" at 497877,1.0086
+plot  "plateA36out2.0.dat"  u 1:8 title "a_Mm" w l, \
+ "" u 1:9  title "a_Mb" w l, \
+ "" u 1:10 t "c_Mm" w l, \
+ "" u 1:11 t "c_Mb" w l, \
+ "" u 1:12 t "a_Mkm" w l, \
+ "" u 1:13 t "a_Mkb" w l, \
+ "" u 1:14 t "c_Mkm" w l lc "yellow", \
+ "" u 1:15 t "c_Mkb" w l lc "black", \
+ "" u 1:16 t "fw" w l

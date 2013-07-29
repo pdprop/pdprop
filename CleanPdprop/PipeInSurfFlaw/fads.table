@@ -1,0 +1,173 @@
+#getFADs.f   vers 1.5 starts...
+#<html><head>
+#<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1"></head><body>
+#<title>Monotonic Data File format</title>
+#<form method="POST" action="http://mme.uwaterloo.ca/cgi-bin/catFADs">
+#<dl compact="compact"> Pick one:
+#<input name="#saeinput" value="FDE_plot" type="radio">FDE_plot
+#<input name="#saeinput" value="FDE_fit" checked="checked" type="radio">FDE_fit
+#<input value="Send for processing" type="submit">
+#<br><pre><textarea rows="50" cols="90" name="SAE_Standard_File">
+#Copyright (C) 2013  F.D.E. Committee
+#This data file is free software - you can redistribute it and/or
+#modify it under the terms of the GNU General Public License as
+#published by the Free Software Foundation; either version 2 of the
+#license, or (at your option) any later version.
+#This data file is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY - without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General PUblic License for more details.
+#You should have received a copy of the GNU General PUblic License
+#along with this program - if not, write to the Free Software
+#Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+#Try also their web site: http://www.gnu.org/copyleft/gpl.html
+# A36 Steel Hot Rolled
+# Machined from 5/8 inch hot rolled plate.
+# Ref.: R.J.Mattos, F.V.Lawrence, "Estimation of the Fatigue Crack Initiation
+#   Life in Welds Using Low Cycle Fatigue Concepts," Fracture Control Rep.19
+#   Univ. of Illinois, Oct. 1975.
+# NOTE!: For  BS7910 FADs required Tags are:
+#      #FileType=   #DataType=   #Sy=   #Su=   #E=
+#      #Stress_units=     #Strain_units=
+#
+#FileType= strain_stress
+#DataType= engineering     #Can be "engineering" or "true"
+#NAME= ASTM-A36
+#NAME= HotRolled
+#NAME= Steel
+#Stress_units= mpa
+#Strain_units= strain
+#Sy= 224. mpa = 32.5 ksi
+#Su= 414. mpa = 60.0 ksi
+#eu= 0.14  #strain at Su
+ # Found EMOD =   190000.00    
+#E= 190000 mpa  27500 ksi
+#FractureStrain=  1.19
+#FractureStress=  952 mpa = 138 ksi
+#monotonic_K= 780 mpa, 113 ksi
+#monotonic_n= 0.258
+#BHN= 0. not reported
+#%RA= 69.7 %
+#From initial MattosStress-Strain plot
+# 0.00371  229
+# 0.00474  230
+# 0.00647  229
+# 0.00750  230
+# 0.00956  230
+# 0.01121  232
+# 0.01253  238
+# 0.01367  243
+# 0.01470  252
+# 0.01608  264
+#From Mattos Stress vs Plastic strain
+#(converted back to Engr.SS)
+#EngrStr   EngrSts_mpa
+#</pre></dl></form> </body></html>
+ #CHECK THESE Inputs:
+ #Stress_units=mpa        Strain_units=strain    
+ #EMOD=   190000.00      Sult=   414.00000      Syield=   224.00000    
+# Checking for Upper Yld: Strain at yield=  0.00318 Syield=    224.0
+#Warning!: Upper yield detected and changed:
+#Old point:    4  0.00146  224. mpa
+#Changed to:        0.00146  224. mpa
+
+#Warning!: Upper yield detected and changed:
+#Old point:    6  0.00274  225. mpa
+#Changed to:        0.00274  224. mpa
+
+#BS7910 Lueders Strain:  eL =  0.02910
+#FADinput #Lueders= yes
+#FADinput #slopeN=  0.1376812E+00
+#FADinput #E=  190000. mpa
+#FADinput #Sy=  224. mpa
+#FADinput #Su=   414. mpa
+#FADinput TrueStrain TrueStress_mpa
+#FADinput  0.00000    0.0
+#FADinput  0.00036   72.0
+#FADinput  0.00073  143.1
+#FADinput  0.00146  224.0
+#FADinput  0.00206  220.5
+#FADinput  0.00274  224.0
+#FADinput  0.00301  221.7
+#FADinput  0.00397  224.9
+#FADinput  0.00510  225.1
+#FADinput  0.00696  225.6
+#FADinput  0.00790  221.7
+#FADinput  0.00887  223.0
+#FADinput  0.00986  222.2
+#FADinput  0.01186  230.7
+#FADinput  0.01382  241.3
+#FADinput  0.01597  254.0
+#FADinput  0.01984  278.5
+#FADinput  0.02343  291.8
+#FADinput  0.02812  303.4
+#FADinput  0.03098  310.5
+#FADinput  0.03629  324.6
+#FADinput  0.04150  339.8
+#FADinput  0.05805  378.3
+#FADinput  0.07641  400.5
+#FADinput  0.09463  432.0
+#FADinput  0.11126  441.5
+#FADinput  0.12948  454.2
+#FADinput  0.14607  459.4
+#FADinput  0.16139  470.1
+#FAD1= 1
+#Krmax= 0.707   #FAD1
+#Srmax= 0.8     #FAD1
+0.0 0.707       #FAD1
+0.8 0.707       #FAD1
+0.8 0.0         #FAD1
+
+   0.0000000       1.0000000            #FAD2a
+  5.93377985E-02  0.99950707            #FAD2a
+  0.11867560      0.99802703            #FAD2a
+  0.17801340      0.99554914            #FAD2a
+  0.23735119      0.99203229            #FAD2a
+  0.29668900      0.98737013            #FAD2a
+  0.35602680      0.98134470            #FAD2a
+  0.41536459      0.97356975            #FAD2a
+  0.47470239      0.96342862            #FAD2a
+  0.53404021      0.95001471            #FAD2a
+  0.59337801      0.93208975            #FAD2a
+  0.65271580      0.90808618            #FAD2a
+  0.71205360      0.87619156            #FAD2a
+  0.77139139      0.83456683            #FAD2a
+  0.83072919      0.78174448            #FAD2a
+  0.89006698      0.71721816            #FAD2a
+  0.94940478      0.64214194            #FAD2a
+   1.0000000      0.57227159            #FAD2a
+ 1.0  0.19724785            #FAD2a Lueders change here
+   1.0680804      0.15528688            #FAD2a
+   1.1274183      0.12760310            #FAD2a
+   1.1867561      0.10591628            #FAD2a
+   1.2460940      8.87180567E-02        #FAD2a
+   1.3054318      7.49275908E-02        #FAD2a
+   1.3647697      6.37578294E-02        #FAD2a
+   1.4241076      5.46272732E-02        #FAD2a
+   1.4241076      0.0           #FAD2a
+
+#FAD2b=       29      #FAD2b
+   0.0000000       1.0000000            #FAD2b
+  0.32154426      0.99802446            #FAD2b
+  0.63885885      0.92075586            #FAD2b
+   1.0000000      0.78050995            #FAD2b
+  0.98416609      0.69899273            #FAD2b
+   1.0000000      0.62790346            #FAD2b
+  0.98957682      0.60125077            #FAD2b
+   1.0039800      0.53406101            #FAD2b
+   1.0051100      0.47571543            #FAD2b
+   1.0069801      0.41011316            #FAD2b
+  0.98993123      0.38234878            #FAD2b
+  0.99539787      0.36215732            #FAD2b
+  0.99187595      0.34317371            #FAD2b
+   1.0300002      0.31910267            #FAD2b
+   1.0772899      0.30236834            #FAD2b
+   1.1340401      0.28867427            #FAD2b
+   1.2431737      0.27121153            #FAD2b
+   1.3024882      0.25552177            #FAD2b
+   1.3545240      0.23794949            #FAD2b
+   1.3860244      0.22937447            #FAD2b
+   1.4241072      0.21484944            #FAD2b
+   1.4241072      0.0           #FAD2b
+#</textarea>
+#</pre></dl></form> </body></html>
