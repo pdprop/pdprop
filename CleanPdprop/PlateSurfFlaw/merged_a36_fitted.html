@@ -1,0 +1,71 @@
+
+#<html><title>SAE Standard Fatigue Data File format</title><body>
+#<FORM METHOD="POST" ACTION="http://mme.uwaterloo.ca/cgi-bin/catgnume">
+#<DL compact> Pick one:
+#<input type="radio" name="#saeinput" value="FDE_plot" >FDE_plot
+#<input type="radio" name="#saeinput" value="FDE_fit"  checked >FDE_fit
+#<input type="submit" value="Send for processing">
+#<br><pre><textarea rows=50 cols=90 name="SAE_Standard_File" >
+#
+#Copyright (C) 2012  F.D.E. Committee
+#This data file is free software - you can redistribute it and/or
+#modify it under the terms of the GNU General Public License as
+#published by the Free Software Foundation; either version 2 of the
+#license, or (at your option) any later version.
+#This data file is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY - without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General PUblic License for more details.
+#You should have received a copy of the GNU General PUblic License
+#along with this program - if not, write to the Free Software
+#Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+#Try also their web site: http://www.gnu.org/copyleft/gpl.html
+#
+# NOTE:  Fitted Data !!
+# A36 Steel Merged Data Sets from Refs. 1 and 2:
+# Ref.1: P.Dindinger report to Fat.Des.+Eval. Comm. Apr.2012
+# Ref.2: G.A.Miller and H.S.Reemsnyder, "Strain-Cycle Fatigue of Sheet and
+# Plate Steels I:  Test Method Development and Data Presentation,"
+# SAE Paper 830175, Detroit MI, Feb28-Mar.4, 1983
+#
+# NOTE that original test data ends at  2Nf = 1.3million. 
+#
+#FileType= strain_life
+#DataType= fitted
+#TIMEcol= 0
+#NAME=  ASTM-A36
+#NAME=  Structural
+#NAME=  Steel
+#Stress_units= ksi
+#Strain_units= strain
+#Sy=    38.4 0.2pc offset, 265  mpa
+#Su=  69.  ksi from Miller/Reemsnyder = 475 mpa
+#eu=       0   #strain at Su not reported
+#E= 29528. ksi  = 203600 mpa
+#FractureStrain=  0 not reported
+#FractureStress=  0. not reported
+#monotonic_K= 0  not reported
+#monotonic_n= 0  not reported
+#BHN= 138.
+#%RA= 0. %  not reported
+#
+#saedigcurve_v2.2.f starts.
+# NOTE!! The Following Points are <b>FITTED DATA:</b>#NOTE!! Fitted Stress computed using Experm. K' and n'
+# Total Strain   2Nf  Stress  Mean   Plastic Strain   Initial
+#    Amp               Amp   Stress      Amp        Elastic Mod.
+   0.88485          1   115.3      0.   0.88095     29528. #Fitted_point
+   0.00914       5000    52.1      0.   0.00737     29528. #Fitted_point
+   0.00665      10000    48.8      0.   0.00499     29528. #Fitted_point
+   0.00493      20000    45.7      0.   0.00338     29528. #Fitted_point
+   0.00344      50000    42.0      0.   0.00202     29528. #Fitted_point
+   0.00270     100000    39.3      0.   0.00136     29528. #Fitted_point
+   0.00217     200000    36.8      0.   0.00092     29528. #Fitted_point
+   0.00169     500000    33.8      0.   0.00055     29528. #Fitted_point
+   0.00144    1000000    31.6      0.   0.00037     29528. #Fitted_point
+#Original test data ends at  2Nf = 1.3million. 
+#Points below are extrapolation:
+   0.00125    2000000    29.6      0.   0.00025     29528. #Fitted_point
+   0.00106    5000000    27.1      0.   0.00014     29528. #Fitted_point
+#</textarea>
+#</pre></DL></FORM></body></html>
+

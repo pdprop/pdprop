@@ -1,0 +1,10 @@
+#NAME= G40.21-50A  
+#deltaKunits= ksi_in     # specify:   mpa_m   or   mpa_mm   or   ksi_in
+#dadnunits=    inch      # specify:   meter   or    mm      or   inch
+#                  # mpa_mm: mpa stress,  mm crack length,  mm in delta_K
+#                            same as N/(mm**(3/2))
+#dKth=  18.0       # threshold stress intensity value
+#dKc=  100.0       # Upper cut-off or Paris equation, or KIc
+#A= 5.0E-09        # Paris co-efficient
+#m= 1.90           # Paris exponent
+
