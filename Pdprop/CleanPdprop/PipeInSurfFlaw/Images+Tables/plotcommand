@@ -1,6 +1,0 @@
-  683  set ylabel "Mb or Mm, surface"
-  684  plot "tableMm_IPflaw_s_bori0.2" u 4:5 w lp, "tableMb_IPflaw_s_bori0.2" u 4:5 w lp lc 3
-  685  set yrange [-1.5:2.]
-  686  set ylabel "Mb or Mm, deepest"
-  687  set yrange [-1.5:2.5]
-  688  plot "tableMm_IPflaw_d_bori0.2" u 4:5 w lp, "tableMb_IPflaw_d_bori0.2" u 4:5 w lp lc 3

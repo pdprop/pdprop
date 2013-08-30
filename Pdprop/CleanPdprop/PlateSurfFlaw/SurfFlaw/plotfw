@@ -1,8 +1,0 @@
-set grid
-set term x11 enhanced font "arial,15"
-set xlabel "c/W"
-set ylabel "a/B"
-set zlabel "fw" rotate by 90
-set title "Surface Flaw Finite Width Correction"
-set title "Plate Surface Flaw Finite Width Correction"
-splot "fwData4Plot" u 3:4:5

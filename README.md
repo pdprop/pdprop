@@ -9,6 +9,7 @@ At this time the following geometries are incluced
     1. A full width surface crack in a plate 
     2. Elliptical surface crack in a plate
     3. Internal elliptical surface crack in pipe
+    4. Center thru crack in a plate
     
 Loading can be specified with a variable amplitude bending and membrane (axial) stress history.
 The sequence effects of the stress history is modelled by rules that mimic the material's memory
