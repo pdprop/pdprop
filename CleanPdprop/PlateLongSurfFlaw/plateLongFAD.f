@@ -1,4 +1,4 @@
-C  plateLongFAD.f   vers. 0.30     FAC jul.21 2013
+C  plateLongFAD.f   vers. 0.40     FAC jul.21 2013
       SAVE
 C  Computes the FAD data from outputs of plateLongSurfFlaw.f programs
 C  Compile:  gfortran  -g -w -fbounds-check plateLongFAD.f  -o plateLongFAD
@@ -11,6 +11,7 @@ C                  W=   Plate width in mm
 C                  Kmat = Fracture stress intensity
 C                  PmEOL= End of Life Pm (membrane stress)
 C                  PbEOL= End of Life Pb (bending stress)
+C                  PinJoint= 0 or 1 for pin jointed structure
 C  
 C   FAD boundaries are read from file "limitsFAD"  in which are contained
 C   the data for  FAD1, FAD2a and FAD2b boundaries.
@@ -32,6 +33,8 @@ C with this program; if not, write to the Free Software Foundation, Inc.,
 C 59 Temple Place -Suite 330, Boston, MA 02111-1307, USA. Try also their
 C web site: http://www.gnu.org/copyleft/gpl.html
 
+C vers. 0.40  Fix major arithm. error in compute for Sigref and SigrefEOL
+C             (forgot to include "term2" )                     Aug. 28 2013
 
 C   Expected input format:
 C  The numbers were printed by plateLongSurfFlaw.f  statement:
@@ -111,8 +114,8 @@ C     Storage for the FAD  diagram points
 
 
       write(0,180)
-      write(0,180)
-  180 format("# plateLongFAD.f  vers. 0.3 starts...")
+      write(6,180)
+  180 format("# plateLongFAD.f  vers. 0.4 starts...")
   190 continue
       write(6,191)
       write(0,191)
@@ -124,6 +127,7 @@ C     to make sure they have been entered.
       Width=  -1.
 
       xKmat = -1 ! Fracture stress intensity
+      ipinjoint= -1  ! switch for pin or non pin joint structure
       PmEOL=  -1 ! End of Life Pm (membrane stress)
       PbEOL=  -1 ! End of Life Pb (bending stress)
 
@@ -233,6 +237,18 @@ C      Kmat = -1 ! material  Fracture stress intensity
          go to 800
       endif
 
+C      PinJoint = -1 ! Structure is either pin jointed=1 or not=0
+      if(firstfield .eq."#PinJoint=" .or.
+     &   firstfield .eq."#Pinjoint=" .or.
+     &   firstfield .eq."#PINJOINT=" .or.
+     &   firstfield .eq."#pinjoint=" .or.
+     &   firstfield .eq."#pinJoint=" )then
+         read(inp300,*) firstfield, ipinjoint
+         write(6,853)ipinjoint
+  853    format("#PinJoint= ",i2)
+         go to 800
+      endif
+
 C      PmEOL= -1 ! End of Life Pm (membrane stress)
       if(firstfield .eq."#PMEOL=" .or.
      &   firstfield .eq."#PmEOL=" .or.
@@ -301,6 +317,11 @@ C      endif
       if(Kmat .eq. -1)then
         write(0,*)"ERROR: #Kmat= not found"
         write(6,*)"ERROR: #Kmat= not found"
+        istop=1
+      endif
+      if(ipinjoint .eq. -1)then
+        write(0,*)"ERROR: #PinJoint= not found"
+        write(6,*)"ERROR: #PinJoint= not found"
         istop=1
       endif
       if(PmEOL .eq. -1)then
@@ -633,16 +654,19 @@ C        compute Sigma_ref:  (depends on if structure is pin jointed)
 C        See BS7910 Annex P.3.3 page 240
 C        (same as plateSurf flaw except for   a2prime   calc. )
            a2prime=(amax/Bthick)
+           term2= 3.0 *( (1.0-a2prime)**2 )
 
          if(ipinjoint .eq. 0) then
 C          No, not pin jointed
            Sigref=stsBmax + sqrt( stsBmax**2 + (9.0*stsMmax**2) *
      &            (1.0-a2prime)**2 )
+           Sigref=Sigref/term2
          else
            Sigref=stsBmax +3.0*stsMmax*a2prime +
      &         sqrt (  (stsBmax + 3.0*stsMmax*a2prime)**2  +
      &                 (9.0*stsMmax**2) * (1.0-a2prime)**2
      &              )
+           Sigref=Sigref/term2
          endif
          SrS(interval)= Sigref/Sflow
          xLrS(interval)= Sigref/Syield
@@ -665,11 +689,13 @@ C        a2prime is still same
 C          No, not pin jointed
            SigrefEOL=PbEOLstsBmax + sqrt( PbEOL**2 + (9.0*PmEOL**2) *
      &            (1.0-a2prime)**2 )
+           SigrefEOL=SigrefEOL/term2
          else
            SigrefEOL=PbEOL +3.0*PmEOL*a2prime +
      &         sqrt (  (PbEOL + 3.0*PmEOL*a2prime)**2  +
      &                 (9.0*PmEOL**2) * (1.0-a2prime)**2
      &              )
+           SigrefEOL=SigrefEOL/term2
          endif
          SrEOLS(interval)= SigrefEOL/Sflow
          xLrEOLS(interval)= SigrefEOL/Syield

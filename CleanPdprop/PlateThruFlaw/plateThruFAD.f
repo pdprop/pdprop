@@ -1,20 +1,21 @@
-C  plateWeldFAD.f   vers. 0.4      FAC aug.28 2013
+C  plateThruFAD.f   vers. 0.31     FAC aug.28 2013
       SAVE
-C  Computes the FAD data from outputs of plateWeldflaw.f programs
-C  Compile:  gfortran  -g -w -fbounds-check plateWeldFAD.f  -o plateWeldFAD
-C  Usage:   plateWeldFAD    >outputFile
+C  Computes the FAD data from outputs of plateThruFAD.f programs
+C  Compile:  gfortran  -g -w -fbounds-check plateThruFAD.f  -o plateThruFAD
+C  Usage:   plateThruFAD    >outputFile
 
-C   The inputfile is a random access (direct) recl=72 file.
+C   The inputfile is a random access (direct) recl=32 file.
 C   This program also reads items from the    pdprop.env   file.
 C   Items include  B=   Plate thickness in mm
 C                  W=   Plate width in mm
 C                  Kmat = Fracture stress intensity
 C                  PmEOL= End of Life Pm (membrane stress)
 C                  PbEOL= End of Life Pb (bending stress)
-C                  PinJoint=  0 or 1   for pin joint structure.
 C  
 C   FAD boundaries are read from file "limitsFAD"  in which are contained
 C   the data for  FAD1, FAD2a and FAD2b boundaries.
+
+C   Note that for a center crack plate BS7910: M=Mm=Mb=1
 
 C  The program is made availble to help students develop advances in crack
 C  propagation software.
@@ -33,19 +34,14 @@ C with this program; if not, write to the Free Software Foundation, Inc.,
 C 59 Temple Place -Suite 330, Boston, MA 02111-1307, USA. Try also their
 C web site: http://www.gnu.org/copyleft/gpl.html
 
-C vers 0.4  Fix major arithm. error in compute of Sigref  and SigrefEOL Aug.28 2013
-C vers 0.31 fix lack of  ipinjoint  variable read from pdprop.env Aug.28 2013
-C vers 0.3 original fork from...
+C vers. 0.31 Alter to variables for center cracked plate. Aug.28 2013
+C            Fork from plateWeldFAD.f (vers. 0.3)  Aug.28 2013
 
-C   Expected input format:
-C  7  0.5000080E+00  0.4000010E+01       1      7  402.37  425.84  1.1038 \
-C      1.0369  0.4293  0.4216  1.2158  1.2246  3.1795  3.2188  1.0004    50.   200.
-
-C  where the numbers were printed by plateWeldflaw.f  statement:
+C   Expected input binary format:
+C  The numbers were printed by plateThruFlaw.f  statement:
 C        nrecord=nrecord+1
-C        write(60,rec=nrecord)nrev,totdam90,totdam00,nblk,nact,
-C     &             lobj90,lobj00,xMm90,xMb90,xMm00,xMb00,
-C     &             xMkm90,xMkb90,xMkm00,xMkb00,xfw,
+C        write(60,rec=nrecord)nrev,totdam90,nblk,nact,
+C     &             lobj90,xfw,
 C     &             stsMembrane,stsBending
 
 C  Output file for plotting etc is:
@@ -63,11 +59,13 @@ C       values. At end of each interval take the max values of variables
 C       in that interval and compute the FAD variables for that interval.
 C       Also compute the Extreme Lr using PmEOL and PbEOL values.
 C    4. Using these resulting max value tables for the intervals, go back
-C       thru the suspect intervals and compute exact numbers
+C       thru the suspect intervals and compute exact numbers 
+
+C    (it is not clear it this last point (4.) is needed)
 C    
 
 
-C      Keep same variable names as in plateWeldflaw.f for record reads
+C      Keep same variable names as in plateThruFAD.f for record reads
 
       character*300  inp300,jnp300      ! used to read in lines as chars.
       character*1    inpone(300),jnpone(300)
@@ -82,25 +80,25 @@ C      Keep same variable names as in plateWeldflaw.f for record reads
 
       character*30 ctypefad   ! reads in which type of FAD data is.
 
-      real*4 totdam90,totdam00,lobj90,lobj00,
-     &             xMm90,xMb90,xMm00,xMb00,
-     &             xMkm90,xMkb90,xMkm00,xMkb00,xfw,
+      real*4 totdam90,lobj90,
+     &             xMm90,xMb90,
+     &             xMkm90,xMkb90,xfw,
      &             stsMembrane,stsBending
       integer*4  nrev,nblk,nact,nrecord
 
 C     Storage for each interval
       real*4  amaxS(1000),cmaxS(1000),
      &    xlobj90maxS(1000),xlobj90minS(1000),
-     &    xlobj00maxS(1000),xlobj00minS(1000),
      &    stsMmaxS(1000),stsMminS(1000),stsBmaxS(1000),stsBminS(1000),
-     &    xKr90maxS(1000),xKr00maxS(1000), SrS(1000),xLrS(1000),
-     &    yKrEOL90S(1000),yKrEOL00S(1000), SrEOLS(1000),xLrEOLS(1000)
+     &    xKr90maxS(1000), SrS(1000),xLrS(1000),
+     &    yKrEOL90S(1000), SrEOLS(1000),xLrEOLS(1000)
       logical logiFAD1(1000),logiFAD2a(1000),logiFAD2b(1000),
      &        logiEOL(1000)
       integer nrevS(1000)
 
       real   xKmat, PmEOL, PbEOL, Syield, Sult, Sflow, Emod
 
+      logical lbruteforce
       logical logiRunFAD1, logiRunFAD2a, logRunFAD2b
       integer ipinjoint ! =0 if not a pin joint structure.
 
@@ -118,7 +116,7 @@ C     Storage for the FAD  diagram points
 
       write(0,180)
       write(6,180)
-  180 format("# plateWeldFAD.f  vers. 0.4  starts...")
+  180 format("# plateThruFAD.f  vers. 0.31 starts...")
   190 continue
       write(6,191)
       write(0,191)
@@ -130,7 +128,6 @@ C     to make sure they have been entered.
       Width=  -1.
 
       xKmat = -1 ! Fracture stress intensity
-      ipinjoint= -1 ! Pin jointed structure, yes or no
       PmEOL=  -1 ! End of Life Pm (membrane stress)
       PbEOL=  -1 ! End of Life Pb (bending stress)
 
@@ -240,19 +237,6 @@ C      Kmat = -1 ! material  Fracture stress intensity
          go to 800
       endif
 
-
-C      PinJoint = -1 ! Structure is either pin jointed=1 or not=0
-      if(firstfield .eq."#PinJoint=" .or.
-     &   firstfield .eq."#Pinjoint=" .or.
-     &   firstfield .eq."#PINJOINT=" .or.
-     &   firstfield .eq."#pinjoint=" .or.
-     &   firstfield .eq."#pinJoint=" )then
-         read(inp300,*) firstfield, ipinjoint 
-         write(6,853)ipinjoint
-  853    format("#PinJoint= ",i2)
-         go to 800
-      endif
-
 C      PmEOL= -1 ! End of Life Pm (membrane stress)
       if(firstfield .eq."#PMEOL=" .or.
      &   firstfield .eq."#PmEOL=" .or.
@@ -323,11 +307,7 @@ C      endif
         write(6,*)"ERROR: #Kmat= not found"
         istop=1
       endif
-      if(ipinjoint .eq. -1)then
-        write(0,*)"ERROR: #PinJoint= not found"
-        write(6,*)"ERROR: #PinJoint= not found"
-        istop=1
-      endif
+C       No pinjoint in plate tru center flaw problem
       if(PmEOL .eq. -1)then
         write(0,*)"ERROR: #PmEOL= not found"
         write(6,*)"ERROR: #PmEOL= not found"
@@ -449,9 +429,9 @@ C         type FAD 1   data
           if(nfad2a .gt. maxfads)then
              write(0,716)
              write(6,716)
-  716        format("#Error: plateWeldFAD: too many FAD2a data points."/
+  716        format("#Error: plateThruFAD: too many FAD2a data points."/
      &            "# you need to edit your FAD table file, or "
-     &            " recompile the program plateWeldFAD.f   Stopping...")
+     &            " recompile the program plateThruFAD.f   Stopping...")
              stop
           endif
           xLrfad2a(nfad2a)=xvalue
@@ -466,9 +446,9 @@ C         type FAD 1   data
           if(nfad2b .gt. maxfads)then
              write(0,721)
              write(6,721)
-  721        format("#Error: plateWeldFAD: too many FAD2b data points."/
+  721        format("#Error: plateThruFAD: too many FAD2b data points."/
      &            "# you need to edit your FAD table file, or "
-     &            " recompile the program plateWeldFAD.f   Stopping...")
+     &            " recompile the program plateThruFAD.f   Stopping...")
            stop
           endif
           xLrfad2b(nfad2b)=xvalue
@@ -540,24 +520,23 @@ C     compute some items for FAD check
 
 C------------------  scan the fadInput.rand file for max values
       open(unit=60, file="fadInput.rand", access="direct",
-     &     recl=72, status="old")
+     &     recl=32, status="old")
       irec=1
-      read(60,rec=irec)nrev,totdam90,totdam00,nblk,nact,
-     &             lobj90,lobj00,xMm90,xMb90,xMm00,xMb00,
-     &             xMkm90,xMkb90,xMkm00,xMkb00,xfw,
+      read(60,rec=irec)nrev,totdam90,nblk,nact,
+     &             lobj90,xfw,
      &             stsMembrane,stsBending
 C     In this first record  nrev   should actually be the number of
 C     records written in the file, including this first one.
-C     Also, as a check,  totdam90 and totdam00  should be 0.0
+C     Also, as a check,  totdam90 should be 0.0  and nrev should have
+C     been saved as a -ve number (no. of records)
       if(totdam90 .ne. 0.0 .or. totdam00 .ne. 0.0 .or.
      &   nrev .ge. 0)then
 C         something is wrong with this random access file
-          write(0,1010)nrev,totdam90,totdam00
-          write(6,1010)nrev,totdam90,totdam00
+          write(0,1010)nrev,totdam90
+          write(6,1010)nrev,totdam90
  1010     format("# Error: 1st rec. of file fadInput.rand  is wrong:"/
      &           "# nrev = ",i10," (should be -ve)"/
      &           "#    a = ",e14.7," should be = 0.0"/
-     &           "#    c = ",e14.7," should be = 0.0"/
      &           "# Stopping now...")
       endif
       nrev=-nrev  
@@ -565,9 +544,8 @@ C         something is wrong with this random access file
 
 C     If we get to here the 1st rec is ok.  Go read the last rec. and
 C     determine what the total reversals of the test was:
-      read(60,rec=maxrecords)nrevmax,totdam90,totdam00,nblk,nact,
-     &             lobj90,lobj00,xMm90,xMb90,xMm00,xMb00,
-     &             xMkm90,xMkb90,xMkm00,xMkb00,xfw,
+      read(60,rec=maxrecords)nrevmax,totdam90,nblk,nact,
+     &             lobj90,xfw,
      &             stsMembrane,stsBending
       write(0,1012)maxrecords,nrevmax,nrevmax,nblk,nact
       write(6,1012)maxrecords,nrevmax,nrevmax,nblk,nact
@@ -575,16 +553,17 @@ C     determine what the total reversals of the test was:
      &       "#MAXREVERSALS= ",i10/
      &       "#MAXBLOCKS= ",i10/
      &       "#NACT= ",i10)
-      if(maxrecords .le. 100000)then
+      if(maxrecords .le. 1000)then
 C         There are not that many recs in this history.  Just bruteforce
 C         analyse all the peaks.
           lbruteforce=.true.
           write(0,1015)maxrecords
           write(6,1015)maxrecords
- 1015     format("# Max Recs ",i10," < 100000  Thus just check all.")
+ 1015     format("# Max Recs ",i10," < 1000  Thus just check all.")
           jrecStart=2
           jrecEnd=maxrecords
-          goto 5000
+C          goto 5000
+C         This has not been debugged yet.  Good luck
       endif
 
 C     We are dividing the history into maxintervals=1000 intervals
@@ -596,20 +575,21 @@ C        Due to roundoff, the last interval may have extra recs.
       
       jrecStart=2
       jrecEnd= jrecStart+nrecsPerInt
+      if(lbruteforce)then
+          jrecEnd=maxrecords
+          maxintervals=1  ! there are less than 1000 recs
+      endif
       do 3900 interval=1,maxintervals
 
          if(interval .eq. maxintervals)jrecEnd=maxrecords !roundoff compensate
 
 C        Scan this interval of records
 C        Read in the first rec of the interval to set the max mins
-         read(60,rec=jrecStart)nrev,totdam90,totdam00,nblk,nact,
-     &             lobj90,lobj00,xMm90,xMb90,xMm00,xMb00,
-     &             xMkm90,xMkb90,xMkm00,xMkb00,xfw,
+         read(60,rec=jrecStart)nrev,totdam90,nblk,nact,
+     &             lobj90,xfw,
      &             stsMembrane,stsBending
              xlobj90max=lobj90 !stress intensities
              xlobj90min=lobj90
-             xlobj00max=lobj00
-             xlobj00mix=lobj00
 
              stsMmax=stsMembrane !Stresses
              stsMmin=stsMembrane
@@ -617,16 +597,12 @@ C        Read in the first rec of the interval to set the max mins
              stsBmin=stsBending
       
         do 1900 jrec=jrecStart+1,jrecEnd
-           read(60,rec=jrec)nrev,totdam90,totdam00,nblk,nact,
-     &             lobj90,lobj00,xMm90,xMb90,xMm00,xMb00,
-     &             xMkm90,xMkb90,xMkm00,xMkb00,xfw,
+           read(60,rec=jrec)nrev,totdam90,nblk,nact,
+     &             lobj90,xfw,
      &             stsMembrane,stsBending
 
            if(xlobj90max .lt. lobj90)xlobj90max=lobj90
            if(xlobj90min .gt. lobj90)xlobj90min=lobj90
-
-           if(xlobj00max .lt. lobj00)xlobj00max=lobj00
-           if(xlobj00min .gt. lobj00)xlobj00min=lobj00
 
            if(stsMmax .lt. stsMembrane)stsMmax=stsMembrane
            if(stsMmin .gt. stsMembrane)stsMmin=stsMembrane
@@ -636,20 +612,15 @@ C        Read in the first rec of the interval to set the max mins
 
  1900    continue  !done scans in this interval
          amax=totdam90 
-         cmax=totdam00
          nrevIntMax=nrev
 
 C        Now for this interval, given the various maxima
 C        compute  Kr, Lr, and the KrEOL, and LrEOL
 
          amaxS(interval)=amax
-         cmaxS(interval)=cmax
          nrevS(interval)=nrevIntMax
          xlobj90maxS(interval)= xlobj90max
          xlobj90minS(interval)= xlobj90min
-
-         xlobj00maxS(interval)= xlobj00max
-         xlobj00minS(interval)= xlobj00min
 
          stsMmaxS(interval)= stsMmax
          stsMminS(interval)= stsMmin
@@ -658,28 +629,15 @@ C        compute  Kr, Lr, and the KrEOL, and LrEOL
 
 C        Compute Kr  (no correction for secondary stresses)
          xKr90maxS(interval)= xlobj90max/xKmat
-         xKr00maxS(interval)= xlobj00max/xKmat
 
-C        compute Sigma_ref:  (depends on if structure is pin jointed)
-         if(Width .ge. (2.0*(cmax+Bthick))  )then
-           a2prime=(amax/Bthick)/( 1.0+(Bthick/cmax) )
-         else
-           a2prime= (2.0*amax/Bthick)*(cmax/Width)
-         endif
-         term2=3.0*((1-a2prime)**2)
+C        compute Sigma_ref:  
+C        See BS7910 Annex P.3.3 page 240 Eq. P.1
+C        There is no "pin jointed" problem correction.
+           term2=3.0 * (1.0-(2.0*amax/Width) )
 
-         if(ipinjoint .eq. 0) then
-C          No, not pin jointed
-           Sigref=stsBmax + sqrt( stsBmax**2 + (9.0*stsMmax**2) *
-     &            (1.0-a2prime)**2 )
-           Sigref=Sigref/term2
-         else
-           Sigref=stsBmax +3.0*stsMmax*a2prime +
-     &         sqrt (  (stsBmax + 3.0*stsMmax*a2prime)**2  +
-     &                 (9.0*stsMmax**2) * (1.0-a2prime)**2
-     &              )
-           Sigref=Sigref/term2
-         endif
+           Sigref=stsBmax + sqrt( stsBmax**2 + (9.0*stsMmax**2) ) /
+     &            term2
+
          SrS(interval)= Sigref/Sflow
          xLrS(interval)= Sigref/Syield
 
@@ -689,32 +647,17 @@ C        EOL stresses are in PmEOL and PbEOL
 C        We will use the amax, cmax, and the various Mm, Mkm  etc factors
 C        from the last record  read in this interval.
          rootPiA=sqrt(pi*totdam90)
-         xK90=xfw*(xMkm90*xMm90*PmEOL + xMkb90*xMb90*PbEOL )
+Cnormally    xK90=xfw*(xMkm90*xMm90*PmEOL + xMkb90*xMb90*PbEOL )
+         xK90=xfw*(PmEOL + PbEOL )  ! for center crack plate
          xK90=xK90*rootPiA
 
-         xK00=xfw*(xMkm00*xMm00*PmEOL + xMkb00*xMb00*PbEOL )
-C          not quite clear in BS7910 what one should use for the "c" crack,
-C          assume it is sqrt(Pi* c) 
-         rootPiC= sqrt(pi*totdam00)
-         xK00=xK00*rootPiC
 
          yKrEOL90S(interval)=xK90/xKmat
-         yKrEOL00S(interval)=xK00/xKmat
 
-C        compute Sigma_refEOL:  (depends on if structure is pin jointed)
-C        a2prime is still same
-         if(ipinjoint .eq. 0) then
-C          No, not pin jointed
-           SigrefEOL=PbEOLstsBmax + sqrt( PbEOL**2 + (9.0*PmEOL**2) *
-     &            (1.0-a2prime)**2 )
-           SigrefEOL=SigrefEOL/term2
-         else
-           SigrefEOL=PbEOL +3.0*PmEOL*a2prime +
-     &         sqrt (  (PbEOL + 3.0*PmEOL*a2prime)**2  +
-     &                 (9.0*PmEOL**2) * (1.0-a2prime)**2
-     &              )
-           SigrefEOL=SigrefEOL/term2
-         endif
+C        compute Sigma_refEOL: 
+C        Variable "term2" is still same
+           SigrefEOL=PbEOLstsBmax + sqrt( PbEOL**2 + (9.0*PmEOL**2) ) /
+     &            term2
          SrEOLS(interval)= SigrefEOL/Sflow
          xLrEOLS(interval)= SigrefEOL/Syield
 
@@ -723,23 +666,19 @@ C        nblk and nact are simply the last values of the interval
 
 C        write out one long row for everything in this interval
          i=interval
-         write(6,3810)amaxS(i),cmaxS(i),nrevS(i),nblk,nact
-     &     ,xlobj90maxS(i),xlobj90minS(i),xlobj00maxS(i),xlobj00minS(i)
+         write(6,3810)amaxS(i),nrevS(i),nblk,nact
+     &     ,xlobj90maxS(i),xlobj90minS(i)
      &     ,stsMmaxS(i),stsMminS(i),stsBmaxS(i),stsBminS(i)
-     &     ,xkr90maxS(i),xKr00maxS(i), SrS(i),xLrS(i)
-     &     ,yKrEOL90S(i),yKrEOL00S(i), SrEOLS(i),xLrEOLS(i)
+     &     ,xkr90maxS(i), SrS(i),xLrS(i)
+     &     ,yKrEOL90S(i), SrEOLS(i),xLrEOLS(i)
 Cdebug     &     ,jrecStart,jrecEnd,i
-     &     ,xMm90,xMb90,xMm00,xMb00
-     &     ,xMkm90,xMkb90,xMkm00,xMkb00
      &     ,xfw
- 3810    format("#FADints ",e10.3,e10.3,3(1x,i10)
-     &      ,4(f6.0,1x)
+ 3810    format("#FADints ",e10.3,3(1x,i10)
+     &      ,2(f6.0,1x)
      &      ,4(f6.1,1x)
-     &      ,4(f6.3,1x)
-     &      ,4(f6.3,1x)
+     &      ,3(f6.3,1x)
+     &      ,3(f6.3,1x)
 Cdebug     &      ,1x,i7,1x,i7,1x,i7
-     &      ,4(f6.4,1x)
-     &      ,4(f6.4,1x)
      &      ,f6.4
      &   )
 
@@ -756,6 +695,7 @@ C     If it is the last interval, compensate for roundoff
 
 C     Detailed interval inspection 
  5000 continue
+C     It is not clear if this is necessary
 
  9000 continue
       close(unit=60)

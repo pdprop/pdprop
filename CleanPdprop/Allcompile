@@ -110,6 +110,23 @@ echo "# File:   plateIntSurfFAD.f ..."
 gfortran  -g -w -fbounds-check pipeIntSurfFAD.f  -o pipeIntSurfFAD
 echo
 echo
+
+
+echo "# Moving to folder PlateThruFlaw:  cd ../PlateThruFlaw"
+cd ../PlateThruFlaw
+pwd
+echo "# Make scripts executable:"
+echo "# chmod 744 setup4 setup4.bak makereport4 makereport4.bak ... "
+chmod 744 setup4 setup4.bak  makereport4 makereport4.bak
+echo
+echo "# Compile programs..."
+echo "# File:   plateThruFlaw.f ..."
+gfortran  -g -w -fbounds-check plateThruFlaw.f  -o plateThruFlaw
+echo "# File:   plateThruFAD.f ..."
+gfortran  -g -w -fbounds-check plateThruFAD.f  -o plateThruFAD
+echo
+echo
+echo "# Check for Errors in the above lines !!"
 echo "# Compiles are done.  If you add new Functions or Subroutines to the"
 echo "# programs,  be sure to put a "SAVE" command at top of each.  New"
 echo "# gfortran compilers require this to save variables between calls."
