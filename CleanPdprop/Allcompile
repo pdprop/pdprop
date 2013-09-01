@@ -126,6 +126,20 @@ echo "# File:   plateThruFAD.f ..."
 gfortran  -g -w -fbounds-check plateThruFAD.f  -o plateThruFAD
 echo
 echo
+echo "# Moving to folder PlateEdgeFlaw:  cd ../PlateEdgeFlaw"
+cd ../PlateEdgeFlaw
+pwd
+echo "# Make scripts executable:"
+echo "# chmod 744 setup5 setup5.bak makereport5 makereport5.bak ... "
+chmod 744 setup5 setup5.bak  makereport5 makereport5.bak
+echo
+echo "# Compile programs..."
+echo "# File:   plateEdgeFlaw.f ..."
+gfortran  -g -w -fbounds-check plateEdgeFlaw.f  -o plateEdgeFlaw
+echo "# File:   plateEdgeFAD.f ..."
+gfortran  -g -w -fbounds-check plateEdgeFAD.f  -o plateEdgeFAD
+echo
+echo
 echo "# Check for Errors in the above lines !!"
 echo "# Compiles are done.  If you add new Functions or Subroutines to the"
 echo "# programs,  be sure to put a "SAVE" command at top of each.  New"
