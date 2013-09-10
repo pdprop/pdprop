@@ -107,7 +107,7 @@ C     Storage for the FAD  diagram points
 
 
       write(0,180)
-      write(0,180)
+      write(6,180)
   180 format("# pipeIntSurfFAD.f  vers. 0.3 starts...")
   190 continue
       write(6,191)

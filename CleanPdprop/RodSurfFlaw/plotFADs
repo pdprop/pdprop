@@ -1,0 +1,11 @@
+!grep FAD1 fads.table > fad1_xy
+!grep FAD2a fads.table > fad2a_xy
+!grep FAD2b fads.table > fad2b_xy
+set grid
+set term x11 enhanced font "arial,15"
+set pointsize 2
+set xlabel  "Lr = S/Sy"
+set ylabel "Kr"
+plot "fad1_xy" u 1:2 w lp, "fad2a_xy" u 1:2 w lp lc 6, "fad2b_xy" u 1:2 w lp
+!rm fad1_xy fad2a_xy fad2b_xy
+

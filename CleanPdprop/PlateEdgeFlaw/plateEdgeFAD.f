@@ -1,4 +1,4 @@
-C  plateEdgeFAD.f   vers. 0.40     FAC aug.31 2013
+C  plateEdgeFAD.f   vers. 0.50     FAC aug.31 2013
       SAVE
 C  Computes the FAD data from outputs of plateEdgeSurfFlaw.f programs
 C  Compile:  gfortran  -g -w -fbounds-check plateEdgeFAD.f  -o plateEdgeFAD
@@ -33,6 +33,7 @@ C with this program; if not, write to the Free Software Foundation, Inc.,
 C 59 Temple Place -Suite 330, Boston, MA 02111-1307, USA. Try also their
 C web site: http://www.gnu.org/copyleft/gpl.html
 
+C vers. 0.50  Fix error in calc of  SigrefEOL                  Sep 8 2013
 C vers. 0.40  Fix major arithm. error in compute for Sigref and SigrefEOL
 C             (forgot to include "term2" )                     Aug. 28 2013
 
@@ -115,7 +116,7 @@ C     Storage for the FAD  diagram points
 
       write(0,180)
       write(6,180)
-  180 format("# plateEdgeFAD.f  vers. 0.4")
+  180 format("# plateEdgeFAD.f  vers. 0.5")
   190 continue
       write(6,191)
       write(0,191)
@@ -545,7 +546,7 @@ C     In this first record  nrev   should actually be the number of
 C     records written in the file, including this first one.
 C     Also, as a check,  totdam90 should be 0.0  and nrev should have
 C     been saved as a -ve number (no. of records)
-      if(totdam90 .ne. 0.0 .or. totdam00 .ne. 0.0 .or.
+      if(totdam90 .ne. 0.0 .or. 
      &   nrev .ge. 0)then
 C         something is wrong with this random access file
           write(0,1010)nrev,totdam90
@@ -675,7 +676,7 @@ C        M=fw=Mkm=Mkb=1.0
 
 C        compute Sigma_refEOL: 
 C        a2prime is still same, and so is term2
-           SigrefEOL=PbEOLstsBmax + sqrt( PbEOL**2 + (9.0*PmEOL**2) )
+           SigrefEOL=PbEOL + sqrt( PbEOL**2 + (9.0*PmEOL**2) )
            SigrefEOL=SigrefEOL/term2
 
          SrEOLS(interval)= SigrefEOL/Sflow

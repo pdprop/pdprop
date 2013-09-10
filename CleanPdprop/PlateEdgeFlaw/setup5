@@ -548,9 +548,9 @@ echo "or:"
 echo "                     ls -lt | head -20"
 echo 
 echo "After running the simulations you can prepare a report with the command:"
-echo "             ./makereport2 outputFile"
+echo "             ./makereport5 outputFile"
 echo " for each of your simulation output files."
-echo " The above script \"makereport2\" is located in this folder. You can edit it"
+echo " The above script \"makereport5\" is located in this folder. You can edit it"
 echo "    to alter or add features."
 echo " Good luck"
 
