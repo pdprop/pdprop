@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# makereport3  vers. 2.0   local (in this folder) command script to help user 
+# makereport3  vers. 2.1   local (in this folder) command script to help user 
 #             transform the outputfile into an html report.
 # Usage:   ./makereport3 simOutFileName
 
@@ -139,7 +139,8 @@ grep ^\#NACT\=   $1FAD.out   >$TMP2
 read <$TMP2 item1 nact  LEFTOVER
 
 echo "<p>Crack Propagation Results:<br>(<i> " >>$HTML
-grep vers\. $1 | grep pipeIntSurfFlaw           >>$HTML
+grep vers\. $1 | grep pipeIntSurfFlaw         >>$HTML
+echo "# makereport3  vers. 2.1"               >>$HTML
 echo "</i><ul><li>No. of Reversals= $nrev revs. or $cycles cycles" >>$HTML
 echo "<li>Final _____ <b>a </b>=      $a   mm"    >>$HTML
 echo "<li>Final _____ <b>c </b>=      $c   mm"    >>$HTML
@@ -187,16 +188,52 @@ echo "fetching line no.= $labelLine from the data for label placement..."
 echo "Fetching filtered history of Sb and Sm ..."
     rm temp.loads
     grep \#history\ \#Filteredck   $1 |../delete1arg | ../delete1arg >temp.loads
-    echo "set term pngcairo size 600,360 font \"Arial,10\"" >loadgp1
+    echo "set term pngcairo size 600,300 font \"Arial,10\"" >loadgp1
     echo "set title \"Applied Sm and Sb Stress History\"" >>loadgp1
     echo "set grid"                                       >>loadgp1
     echo "set output \"$1.stress.png\""                   >>loadgp1
     echo "set xlabel \"Point No. or Reversals\"  "        >>loadgp1
     echo "set ylabel \"Sm or Sb, Stress MPa\" "           >>loadgp1
-    echo "plot  \"temp.loads\"  u 4:1 title \"Sm\" w l, \"\" u 4:2 title \"Sb\" w l lc 3"  >>loadgp1
+    echo "plot  \"temp.loads\"  u 1 title \"Sm\" w l, \"\" u 2 title \"Sb\" w l lc 3"  >>loadgp1
     gnuplot "loadgp1"
     echo "<p><img src=\"$1.stress.png\">"  >>$HTML
     echo "<br> " >>$HTML
+
+#   Plot BEGIN 50 and END 50 pts  if no. of points  >1000
+#   Check file temp.loads  to see how many loadsets there are.
+    wc -l temp.loads >$TMP2
+    read <$TMP2  nloadsets LEFTOVER
+    if [[ $nloadsets -gt 1000 ]];
+    then
+      echo "#Plotting head and tail of hist..."
+      echo "set term pngcairo size 300,250 font \"Arial,8\"" >loadgp1
+      echo "set title \"Begining of History\""              >>loadgp1
+      echo "set grid"                                       >>loadgp1
+      echo "set output \"$1.stressA.png\""                  >>loadgp1
+#      echo "set xlabel \"Point No. or Reversals\"  "        >>loadgp1
+      echo "set ylabel \"Sm or Sb, Stress MPa\" "           >>loadgp1
+      echo "set xrange [0:50]"                              >>loadgp1
+      echo "plot  \"temp.loads\"  u 1 title \"Sm\" w l, \"\" u 2 title \"Sb\" w l lc 3"  >>loadgp1
+      gnuplot "loadgp1"
+
+      echo "$nloadsets" | awk '{print $1-50}'    >$TMP2
+      read <$TMP2 iendless50 LEFTOVER
+      echo "set term pngcairo size 300,250 font \"Arial,8\"" >loadgp1
+      echo "set title \"End of History\""                   >>loadgp1
+      echo "set grid"                                       >>loadgp1
+      echo "set output \"$1.stressB.png\""                  >>loadgp1
+#      echo "set xlabel \"Point No. or Reversals\"  "        >>loadgp1
+      echo "set ylabel \"Sm or Sb, Stress MPa\" "           >>loadgp1
+      echo xrange: $iendless50:$nloadsets
+      echo "set xrange [$iendless50:$nloadsets]"            >>loadgp1
+      echo "plot  \"temp.loads\"  u 1 title \"Sm\" w l, \"\" u 2 title \"Sb\" w l lc 3"  >>loadgp1
+      gnuplot "loadgp1"
+
+      echo "<img src=\"$1.stressA.png\">"  >>$HTML
+      echo "<img src=\"$1.stressB.png\">"  >>$HTML
+      echo "<br> " >>$HTML
+    fi
+
 
 echo "Plotting da/dn table from results file ..."
     grep ^\#dadnTable $1 |../delete1arg  >dadntable$$
@@ -219,7 +256,7 @@ echo "Starting plot of Kmax and Kmin for direction  a ..."
     echo "set title \"History of Kmax, Kmin for Crack in Direction a\"">>loadgp2
     echo "set output \"$1.Kmax+Kmin90.png\""               >>loadgp2
     echo "set xlabel \"1/2 Cycles or Reversals\"  "        >>loadgp2
-    echo "set ylabel \"Kmax, or Kmin for each History Interval\" " >>loadgp2
+    echo "set ylabel \"Kmax, or Kmin in each Interval\" " >>loadgp2
     echo "plot  \"$1.dat\"  u 3:6 w p, \"\" u 3:7 w p"     >>loadgp2
 #   Now gnuplot can load the instructions in loadgp2
     gnuplot "loadgp2"
@@ -232,7 +269,7 @@ echo "Starting plot of Kmax and Kmin for direction  c ..."
     echo "set title \"History of Kmax, Kmin for Crack in Direction c\"">>loadgp3
     echo "set output \"$1.Kmax+Kmin00.png\""               >>loadgp3
     echo "set xlabel \"1/2 Cycles or Reversals\"  "        >>loadgp3
-    echo "set ylabel \"Kmax, or Kmin for each History Interval\" " >>loadgp3
+    echo "set ylabel \"Kmax, or Kmin in each Interval\" " >>loadgp3
     echo "plot  \"$1.dat\"  u 3:8 w p, \"\" u 3:9 w p"     >>loadgp3
 #   Now gnuplot can load the instructions in loadgp3
     gnuplot "loadgp3"
@@ -380,10 +417,6 @@ echo "Starting Initiation calculations..."
        echo "../saefcalc2  matfile 1.8 <$1.rain.txt >$1.initiationCalcs"
        ../saefcalc2  matfile 1.8 <$1.rain.txt >$1.initResults
 
-       echo "<pre>"                  >>$HTML
-       grep \#xcalc2 <$1.initResults | ../delete1arg  >>$HTML
-       echo "</pre>"              >>$HTML
-
        echo "Predicted History Repetitions to Initiation:" >>$HTML
        echo "<pre><b>"                                     >>$HTML
        grep \#xcalc3 <$1.initResults  | ../delete1arg      >>$HTML
@@ -404,6 +437,7 @@ echo "Starting Initiation calculations..."
        echo "<p><img src=\"$1ss.png\"><br>"  >>$HTML
 
 #Fetch boxed cumulative cycle plot and damage plot data
+    echo "<!-- PAGE BREAK -->"                                 >>$HTML
     echo "<h3>Cumulative Cycle Plot of History and Damage:</h3>" >>$HTML
     grep -i \#plothist $1.initResults | ../delete1arg >temp6
     grep -i \#plotdam  $1.initResults | ../delete1arg >temp7
@@ -426,6 +460,11 @@ echo "Starting Initiation calculations..."
     echo "<p><img src=\"$1.damage.png\">"  >>$HTML
     echo "<br> " >>$HTML
     echo "<i>(Rectangles are Rainflow Cycle Sets: Sorted by Range: largest on Left)</i>" >>$HTML
+
+    echo "<h3>Detailed Damage for each Rainflow Cycle Set:</h3>" >>$HTML
+       echo "<pre>"                  >>$HTML
+       grep \#xcalc2 <$1.initResults | ../delete1arg  >>$HTML
+       echo "</pre>"              >>$HTML
 
 echo "<h2>Appendix 1:   Print of  \"pdprop.env\" Simulation Control file</h2>"  >>$HTML
     echo "<pre>"                        >>$HTML

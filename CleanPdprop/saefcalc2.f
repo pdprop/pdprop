@@ -1,21 +1,20 @@
-C saefcalc2.f  Ver. 1.8 Prog to calculate life using sae std. fitted (updated Nov 1 2011)
+C saefcalc2.f  #version= 1.9 Calculate life using sae std. fitted (Oct 18 2013)
       SAVE
-C              fatigue data file and a sae standard rainflow file as input. (fac Oct25/04)
-C Linux Compile:  g77 -g saefcalc2.f  -o saefcalc2
-C              :  gfortran -g -w -fbounds-check saefcalc2.f  -o saefcalc2
+C Linux Compile:  gfortran -g -w -fbounds-check saefcalc2.f  -o saefcalc2
+C              :  g77 -g saefcalc2.f  -o saefcalc2
 C freeBSD      :  g95 -g  saefcalc2.f -o saefcalc2
-C Sun Compile:  f77 -g -Bstatic saefcalc2.f  -o saefcalc2
-C Usage: 
-C saefcalc2  matl_fitted_file multfactor <rainflow_file  >outfile
-C                 ^             ^------- is a multiplying factor to scale the rainflow file
-C                 |______________________is the digital fitted fatigue curve file
+C Sun Compile  :  f77 -g -Bstatic saefcalc2.f  -o saefcalc2
+
+C Usage: saefcalc2  matl_fitted_file multfactor <rainflow_file  >outfile
+C                        multfactor  is a factor to scale the rainflow file
+C                        matl_fitted_file  is the digital fitted fatigue curve file
 C
+C Use fatigue data file and a SAE standard rainflow file as input. (fac Oct25/04)
 C In the rainflow file the data lines are assumed to be:
 C   Srange  Smean  N    Smax   Smin
 C        Where Smax, Smin are Elastic Stresses in MPa
-C   and    N_ is number of cycles. The "triples" sets can be repeated as
-C   long as the argument list will allow. Only N, Smax, and Smin are actually
-C   used in this program. Srange and Smean are only provided for visual assessment.
+C   and    N_ is number of cycles.  Only N, Smax, and Smin are actually
+C   used in this program. Srange and Smean are only provided for easy reading.
 
 C---------------------------------------------------------------------------
 C  Copyright (C) 2004 SAE Fatigue Design and Evaluation Committee
@@ -35,7 +34,13 @@ C  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 C  Try also their web site: http://www.gnu.org/copyleft/gpl.html
 C---------------------------------------------------------------------------
 
-C             Ver.1.8 Added a "SAVE" to each SUBROUTINE to preserve data
+C vers 1.9 Changes to allow easier automatic pdf report generation:
+C          Add identifier to output material file name  #matfile="
+C          Add identifier to output version no:  #version="
+C          to be used by a grep  for writing report.
+C          Delete the Ford ID number tag etc.  Never used.  Oct. 2013
+C          Change #Input=  output near line 427 to yield SAE std rainflow format
+C  Ver.1.8 Added a "SAVE" to each SUBROUTINE to preserve data
 C                     between calls  (a new gfortran "feature" ) Feb 2012
 C             Ver.1.7 Fixed nbrinell format in sta            Nov 2011
 C             Ver.1.6 fixes exact match interpolation bug. See Cbugfix   May2005
@@ -207,7 +212,8 @@ c          from s/r getloop
      &                 PlstrainAmp,ElstrainAmp,SigmaxStrainAmp,
      &                 ndata,FractureStress,FractureStrain
 
-
+      write(6,50)
+   50 format("#version= 1.9  saefcalc2.f")
 
 Cdidntwork to s/rs      PARAMETER ( IDIM=250 )
       idim=250
@@ -228,7 +234,6 @@ C     Set some default values in case user forgets
       Cwebpage=" "
       FractureStress=0.
       FractureStrain=0.
-      ifordnumber=0
       nbrinell=0
       sorttype="life"
       Xmagfactor= 1.0
@@ -258,13 +263,16 @@ C         write(0,*)" Where [ Smax Smin N ] can be multiple sets."
            write(6,*)"#Error: saefcalc2 : wrong no. of arguments"
            write(0,*)"#Usage e.g.: saefcalc2 matl_file  multFactor",
      &               " <rainfile >outfile"
-         STOP
-        ENDIF
+           stop
+         endif
 
 C       The first arg is material file name
         jvect=1
         call getarg(jvect,fname)
         write(6,*)"#Opening material file= ",fname," as unit 10"
+        write(6,*)"#matfile= ",fname," as unit 10"
+C          #matfile=   is the string used to get filename in 
+C                      makeInitReport script after this runs.
         open(unit=10,file=fname)
 
 C       2nd arg should be the multiplier factor
@@ -273,6 +281,8 @@ C       2nd arg should be the multiplier factor
         read(INP80,*,err=600)xmultf
         write(6,*)"#Found History multiply factor: ",xmultf
         write(0,*)"#Found History multiply factor: ",xmultf
+        write(6,595)xmultf
+  595   format("#multfactor= ",e14.7)
         go to 610
 
   600   write(0,*)"#Error: Could not read multFactor:",INP80
@@ -411,12 +421,12 @@ C      Put the temp stuff into the "i" location
   790 continue
  
   791 continue
-      write(6,*)"#Inputs after sorting:"
-      write(6,*)"#  Smax_in   Smin_in   SRange_in   Cycles_in"
+      write(6,*)"#Inputs= #Inputs after scaling and sorting:"
+      write(6,*)"#Inputs= #  Srange    Smean     Cycles   Smax   Smin "
       do 795 i=1,nargsets
-        write(6,793)Smaxin(i),Sminin(i),Srangein(i),
-     &     Cyclesin(i)
-  793   format("#Inputs= ",3(1x,f6.1),1x,f11.1)
+        xsmean= (Smaxin(i)+Sminin(i))/2.0
+        write(6,793)Srangein(i),xsmean,Cyclesin(i),Smaxin(i),Sminin(i)
+  793   format("#Inputs= ",2(f6.1,1x),  f11.1,  f6.1,1x,f6.1)
   795 continue
        
 
@@ -429,8 +439,6 @@ C           = Counts input lines
 C          =  Counts input data lines
       numnames=0
 C             = counts no. #NAMES
-      ifordnumber= 0
-C             = contains Ford file number ID
       numcomment=0
 C             = counts no. # comment lines
       
@@ -714,14 +722,6 @@ C        DataType is ok.  Write it out as a comment
       endif
 
 
-      if(firstfield .eq."#Ford=" .or.
-     &   firstfield .eq."#FORD=" .or.
-     &   firstfield .eq."#ford=" )then
-         read(inp300,*) firstfield, ifordnumber
-         go to 950
-      endif
-
-
       if(firstfield .eq."#BHN=" .or.
      &   firstfield .eq."#bhn=" .or.
      &   firstfield .eq."#Bhn=" .or.
@@ -822,7 +822,7 @@ C     See if some of the critical values are missing:
       write(6,*)"#EMOD=",EMOD, " Sult=",Sult," Syield=",Syield,
      &          " %RA=",percentRA," Fracture_Stress=",FractureStress,
      &          " Fracture_Strain=",FractureStrain
-      write(6,*)"#Ford=",ifordnumber," BHN=",nbrinell
+      write(6,*)"#BHN=",nbrinell
 
       
       if(stressunits .eq."mpa" .or.
@@ -1244,8 +1244,8 @@ C     Get the first 10 chars from each of first two names
       if(numnames.eq.1)then
         read(names30(1),*)name1
       endif
-      write(6,1490),name1,name2, nbrinell,ifordnumber
- 1490 format("# ",A10," ",A10," BHN= ",I5," Fn= ",I4)
+      write(6,1490),name1,name2, nbrinell
+ 1490 format("# ",A10," ",A10," BHN= ",I5)
 
       write(6,2010)
  2010 format("#xcalc2 Loop   Smax    Smin         N  Sigmax ",

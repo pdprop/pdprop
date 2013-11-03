@@ -571,9 +571,9 @@ echo "End of  setup check.   If all is well you can now run  commands like:"
 echo
 echo "              ./plateWeldflaw  scaleFactor <loadHistory >outputFile"
 echo
-echo "eg.:          ./plateWeldflaw   1.0 <load1.txt  >plateXYZout1.0"
+echo "eg.:          ./plateWeldflaw  0.95 <load1.txt  >plateXYZout0.95"
 echo
-echo "eg.:          ./plateWeldflaw   2.0 <load1.txt  >plateXYZout2.0"
+echo "eg.:          ./plateWeldflaw  0.90 <load1.txt  >plateXYZout0.90"
 echo
 echo "Note:  if you have imported files from Windows systems you should probably"
 echo "       convert the DOS type text files to Linux format with the command:"

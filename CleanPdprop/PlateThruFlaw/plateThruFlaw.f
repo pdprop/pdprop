@@ -1,4 +1,4 @@
-C  plateThruFlaw.f   vers. 3.07   Notched Spec Crack Prop.  FAC jan 21 2013
+C  plateThruFlaw.f   vers. 3.10   Notched Spec Crack Prop.  FAC nov 03 2013
       SAVE
 C  Push-Down List crack propagation program.
 C  Compile:  gfortran  -g -w -fbounds-check plateThruFlaw.f  -o plateThruFlaw
@@ -26,8 +26,11 @@ C web site: http://www.gnu.org/copyleft/gpl.html
 C Note that some subroutines included in this work are from GNU GPL licenced
 C program:  http://fde.uwaterloo.ca/Fde/Calcs/saefcalc1.html
 C
+C vers. 3.10 Replace getPeakLoads() s/r  to remove small cycles Oct 26 2013
+C            and align the end and begining of points in the history block.
+C            Also introduce (but not yet use) a cycle repetition factor.
+C            This latter requires a small change in hist. plot of makereport5
 C vers. 3.07 Fork plateLongSurfFlaw.f to  plateThruFlaw.f
-
 C vers. 3.06   Other catch-up version fixes:
 C       3.03 change "a" accumulator to  REAL*8
 C            Add output of crack info to a binary file.      
@@ -166,11 +169,12 @@ C                             in S/R getPeakLoads()
 C      integer*4  sae(10000)
 C     Stress membrane, bending, and total storage:
       real*4 stsm(5000),stsb(5000),ststot(5000)
+      integer*4 iloadflag(5000) ! = 1 if ok, =0 not used, or intValue if repeat
       real*4 ststotmax,ststotmin,ststotwindow
       integer*4 nloads
       logical debugLoads
-      common /LOADS/ stsm,stsb,ststot, ststotmax,ststotmin,ststotwindow,
-     &               nloads,debugLoads
+      common /LOADS/ stsm,stsb,ststot,iloadflag, ststotmax,ststotmin,
+     &               ststotwindow,nloads,debugLoads
 
 
       real*4 ldo90,lobj90
@@ -252,7 +256,7 @@ C---------------------------  Run time input data------------------
   184 continue
       write(6,185)
       write(0,185)
-  185 format("# plateThruFlaw.f vers. 3.07"/
+  185 format("# plateThruFlaw.f vers. 3.10"/
      & "#Usage: plateThruFlaw  scale <histfile  >outfile"/)
 
       nargc = iargc()
@@ -1007,6 +1011,10 @@ C        Ok, its a number
            stop
          endif
          read(inp300,*,err=925)xtime,xmembrane,xbending
+        iloadflag(nloads)=1  ! used to filter loads 1=ok, 0=delete in the
+C        s/r getPeakLoads(). Also in future code will be a repeat factor
+C        that is read as input.
+
 C        Adjust to mag. and mean shift in *.env file
          xmembrane=xmembrane*xmagfactorm + xmeanAddm
          xbending= xbending*xmagfactorb  + xmeanAddb
@@ -2490,29 +2498,30 @@ C       We should not be here.  Assume fracture strain
 
 
 
-
-
 C======================================================================
       SUBROUTINE getPeakLoads(ivec,iret)
       SAVE
-C     ivec= function instruction, usually=1
+C     ivec= function instruction, usually=1            Last change Oct2013
 C     iret= return value 
 C     s/r to look at the total stress and remove any non-reversal points
-C     from the load history.   A list of removals is formed and then the
-C     designated loads are removed from the memory.  In this program we are
+C     from the load history.   Each load set has an integer flag to
+C     designate loads to be removed from the memory.  In this program we are
 C     focused on the total stress  ststot() to decide removal or keep.
 
 c     Load history storage.  If changing dimensions, also change same 
 C                             in mainline
 C     Stress membrane, bending, and total storage:
       real*4 stsm(5000),stsb(5000),ststot(5000)
+      integer*4 iloadflag(5000) ! 1=save 2=delete  n=repeat
       real*4 ststotmax,ststotmin,ststotwindow
       integer*4 nloads
       logical debugLoads
-      common /LOADS/ stsm,stsb,ststot, ststotmax,ststotmin,ststotwindow,
-     &               nloads,debugLoads
+      common /LOADS/ stsm,stsb,ststot,iloadflag, ststotmax,ststotmin,
+     &               ststotwindow,nloads,debugLoads
 
-      integer*4 iremove(5000)   ! list of points to be removed in 2nd pass of data
+      real*4 stsold ! the last reversal point
+      real*4 stshere ! the present position
+      real*4 stsnext ! the next point being examined
 
       ngood=0                 ! records the no. of good points
       n=0                     ! points to the data being examined
@@ -2525,72 +2534,95 @@ C     Get the first point.
       ngood=ngood+1
 
 C     check if the first and last point in the history are same
+C     Do this after filtering
       if(ststot(1).eq.ststot(nloads) )then
         write(0,90)
         write(6,90)
    90   format("#history #First and last pts in history are same."/
      &         "#history #Eliminating the 1st history point now")
         nbad=nbad+1
-        iremove(nbad)=1
+        iloadflag(1)=0
 C       Save a copy for rainflow file created near end of program
-        ststot1=ststot(1)
+        ststot1=ststot(1) ! Not used. Adds an extra ramp per block!
       endif
 
-
+C     Get the second point   stspres  to create the initial line.
   100 continue
       n=n+1
       stsnext=ststot(n)    !get the 2nd point
+      nstspres=n
+
       if(stsnext .eq. stsold)then ! remove the new point
         nbad=nbad+1
-        iremove(nbad)=n
+        iloadflag(nstspres)=0
+        write(6,*)"#DeleteLd samePoint: ",nstspres,stspres
         go to 100
       endif
-C     1st and 2nd pts have been read in
-C     2nd pt is not equal to first
+
+
+C     1st (stsold) and 2nd pts (stspres) have been read in----------------
+C     2nd pt is not equal to 1st.  Establish direction
       iupdown=+1
       if(stsnext .lt. stsold)iupdown=-1
-      stsold=stsnext
-      nstsold=n
+C     stspres is acceptable
+      if(debugLoads)write(6,*)"#stsold,nstsold,stspres,nstspres",
+     &               stsold,nstsold,stspres,nstspres,iupdown
 
 C     ok, first point and direction is set. Keep going
  2000 continue
       n=n+1
       if(n .gt. nloads)go to 9000
       stsnext=ststot(n)
-C     If its equal to the old one we can eliminate the new
-      if(stsnext .eq. stsold)then
+      nstsnext=n
+      if(debugLoads)write(6,*)"#stsnext,nstsnext: ",stsnext,nstsnext,
+     &             iupdown
+C     If its equal to the old one we can eliminate the new point
+      if(stsnext .eq. stspres)then
         nbad=nbad+1
-        iremove(nbad)=n
+        iloadflag(nstsnext)=0
+        write(6,*)"#DeleteLd samePoint: ",nstsnext stsnext
         go to 2000
       endif
 
-      if(stsnext .lt. stsold)go to 3000  ! Potentially it is a reversal point, downwards
+C     No, its not equal.  Could be a reversal  or a continuation of ramp.
+
+      if(stsnext .lt. stspres)go to 3000  ! Potentially it is a reversal point, downwards
 C     If not, then things are going in the same direction  if iupdown =1
+
 C     New is going upwards--------------------------------------------------
-C     If the same direction we can discard stsold  
+C     If the same direction we can discard stspres  
       if(iupdown .eq. +1)then
-C        Same direction but further, discard old pt
+C        Same direction but further, discard pres pt
+      if(debugLoads)write(6,*)"#discarding pres pt no.",
+     &                 nstspres," iud= ",iupdown
          nbad=nbad+1
-         iremove(nbad)=nstsold
-         stsold=stsnext
-         nstsold=n
+         iloadflag(nstspres)=0
+        write(6,*)"#Delete non-revPoint: ",nstspres,stspres
+         stspres=stsnext
+         nstspres=nstsnext
          go to 2000 ! get next point
        endif
 
 C      iupdown must have been = -1,  thus previous direction was in compression.
 C      If we get to this point then it is a potential reversal.
 C      See if its size is bigger than the allowable window
-       if((stsnext-stsold) .lt. ststotwindow)then  ! too small, skip new pt
+       if((stsnext-stspres) .lt. ststotwindow)then  ! too small, skip new pt
          nbad=nbad+1
-         iremove(nbad)=n
-         go to 2000
+         iloadflag(nstsnext)=0
+        write(6,*)"#Delete tooSmallPoint: ",nstsnext,stsnext
+         go to 2000  !go get a new one
        endif
 
 C      Ok, it is bigger than the window. Must be a reversal
+       if(debugLoads)write(6,*)"#Rev. C_T: old, pres, next ",
+     &        stsold,nstsold,stspres,nstspres,stsnext,nstsnext
        ngood=ngood+1
-       iupdown=+1
-       stsold=stsnext
-       nstsold=n
+       iupdown=+1   !change direction
+C      Set up the reversal point as old
+       stsold=stspres
+       nstsold=nstspres
+       stspres=stsnext
+       nstspres=nstsnext
        go to 2000
 
 C     New is going downwards -------------------------------------------------------
@@ -2599,119 +2631,218 @@ C     the new point is going downwards.  Check the old direction
       if(iupdown .eq. -1)then  ! same direction
 C       Discard the old point, and replace it with the new pt.
          nbad=nbad+1
-         iremove(nbad)=nstsold
-         stsold=stsnext
-         nstsold=n
+         iloadflag(nstspres)=0
+        write(6,*)"#Delete non-revPoint: ",nstspres,stspres
+         stspres=stsnext
+         nstspres=nstsnext
          go to 2000
       endif
 
 C     iupdown was +1, previous direction was into tension
 C     Potential change in direction.  Is it bigger than the window
-      if((stsold-stsnext) .lt. ststotwindow)then
+      if((stspres-stsnext) .lt. ststotwindow)then
 C       too small, eliminate the new point
          nbad=nbad+1
-         iremove(nbad)=n
+         iloadflag(nstsnext)=0
+        write(6,*)"#Delete tooSmallPoint: ",nstsnext,stsnext
          go to 2000
       endif
 
 C     Ok, reversal is bigger than the window. Its a reversal
       ngood=ngood+1
+      if(debugLoads)write(6,*)"#Rev.T_C: old, pres, next ",
+     &   stsold,nstsold,stspres,nstspres,stsnext,nstsnext
       iupdown=-1
-      stsold=stsnext
-      nstsold=n
+      stsold=stspres
+      nstsold=nstspres
+      stspres=stsnext
+      nstspres=nstsnext
       go to 2000
 
  9000 continue
       if(nbad.eq.0)then    ! no points eliminated
+        write(0,9002)
         write(6,9002)
  9002   format("#history #No points needed to be eliminated."/)
         ngood=nloads
-        go to 9799  ! print out the filtered history and rainflow
+        go to 9400  ! print out the filtered history and rainflow 
       endif
 
-      write(6,*)"#history #PPICK found ",ngood,"good pts, and ",nbad,
-     &          " to be eliminated. List: "
-      do 9010 i=1,nbad
-         write(6,9009)iremove(i)
- 9009    format("#history #eliminate pt.",i7)
- 9010 continue
+      write(0,9005)ngood,nbad
+      write(6,9005)ngood,nbad
+ 9005 format("#history #PPICK found ",i7,"good pts, and ",i7,
+     &       " to be eliminated. See list above.")
 
 C     ------------------selction is done.  Must now eliminate and update list
 
-C     We first need to sort the list of elimination peaks. Use ugly sort.
-C      write(6,9480)
-C 9480 format("#history #Sorted Eliminated point nos.:")
-C      do 9500 i=1,nbad-1
-CC       Find the smallest and put into position iremove(i)
-C        ismallest=iremove(i)
-C        ismallindex=i
-C        do 9300 j=i+1,nbad
-C           if(iremove(j).lt.ismallest)then
-CC            Found a smaller one
-C             ismallest=iremove(j)
-C             jsmallest=j
-C           endif
-C 9300   continue
-CC     Now interchange the two
-C      itemp=iremove(i)
-C      iremove(i)=iremove(j)
-C      iremove(j)=itemp
-C      write(6,9009)iremove(i)
-C 9500 continue
-
-C     The removal list is now sorted to the smallest peak no. first
+ 9400 continue
 C     Now go throught the stress storage and take out those to be eliminated
 C     Start at the first point to be eliminated
-      ielim=1       !Points to the active point in iremove()
-      iput=1        !Points to next good save location, initially=1
-      do 9600 i=1,nloads
-        jremove=iremove(ielim)
-        if(i .eq. jremove)then
-C         Yes this point will be eliminated
-C         increment the pointer to next elimination point
-          ielim=ielim+1
-          jremove=iremove(ielim)
-          go to 9600
-        endif
-C       No?  then save the point
-C       This point does not need elimination, save it
-        stsm(iput)=stsm(i)
-        stsb(iput)=stsb(i)
-        ststot(iput)=ststot(i)
-        iput=iput+1
-        write(6,9590)stsm(i),stsb(i),ststot(i),i
- 9590   format("#history #Filtered ",3(f7.1,1x),i6)
+      iput=0        ! index points to next available (empty) storage point
+ 9500 continue
+      iput=iput+1
+      if(iloadflag(iput) .ne. 0)goto 9500
+C      write(6,*)"#empty at= ",iput  !debug
+C     yes flag is 0,  this spot is open for a good pt.
+
+C     Now find the next pt that needs to be saved
+      jnextsavept=iput
+ 9520 continue
+      jnextsavept=jnextsavept+1
+      if(jnextsavept .gt. nloads)goto 9600  ! end of data found
+      if(iloadflag(jnextsavept) .eq. 0)goto 9520
+C      write(6,*)"#nextFull at= ",jnextsavept  !debug
+
+C     Yes, we have the next point with iloadflag=1
+C     Move this next point to the available postition at iput
+      stsm(iput)=stsm(jnextsavept)
+      stsb(iput)=stsb(jnextsavept)
+      ststot(iput)=ststot(jnextsavept)
+      iloadflag(iput)=iloadflag(jnextsavept)
+      iloadflag(jnextsavept)=0   !set the moved pt flag to 0
+C     For Pdprop  crack propagation programs:
+C      write(6,9530)stsm(iput),stsb(iput),ststot(iput),
+C     &     iloadflag(iput),iput
+C 9530 format("#history #FilteredOut",3(f7.1,1x),i6,1x,i6)
+      goto 9500
+
  9600 continue
+C     End of data encountered.
+C     Right now iput is still sitting on a flag=0 pt.
+      iput=iput-1  ! point back to last non-zero flag point.
+
+C     End-Begin Alignment Check-----------------------------------
+C     Check if the first and last point in the history are same
+C     Do this after filtering
+      nstart=1  !  This is starting point of history, Change?
+      if(ststot(1).eq.ststot(nloads) )then
+        nstart=2
+        write(0,9604)ststot(1),ststot(nstart)
+        write(6,9604)ststot(1),ststot(nstart)
+ 9604   format("#history #1st and Last pts in Filtered hist are same."/
+     &         "#history # ststot(1)= ",f8.2/
+     &         "#history #Eliminating the 1st history point now"/
+     &         "#history #New start pt: ststot()= ",f8.2)
+C       Save a copy for rainflow file created near end of program
+        ststot1=ststot(2) ! Not used. Adds an extra ramp per block!
+      endif
+
+C     There is still the problem of aligning the begin/end of the
+C     filtered history.  The PDlisting process does not like two 
+C     points in the same direction, one after the other.
+C     The method is to look at the end slope, the joint slope, and
+C     the begin slope.  If any of these three have "two in a row"
+C     with the same sign, we have an alignment problem.
+      iwrap=1   ! =1 means Ok,  =0 means problem
+      iendDir= +1
+      if( (ststot(iput) - ststot(iput-1)) .lt. 0.)iendDir=-1
+      ijoinDir= +1
+      if( (ststot(nstart) - ststot(iput)) .lt. 0.)ijoinDir=-1
+      ibeginDir=  +1
+      if( (ststot(nstart+1) - ststot(nstart)) .lt. 0.)ibeginDir=-1
+
+      write(0,*)"#ststot(nstart): ",ststot(nstart), nstart
+      write(0,*)"#ststot(nstart+1): ",ststot(nstart+1), nstart+1
+      write(0,*)"#ststot(iput-1): ",ststot(iput-1), iput-1
+      write(0,*)"#ststot(iput): ",ststot(iput), iput
+      write(0,*)"#iendDir: ",iendDir
+      write(0,*)"#ijoinDir: ",ijoinDir
+      write(0,*)"#ibeginDir: ",ibeginDir
+
+      if(iendDir .eq. ijoinDir)iwrap=0
+      if(ijoinDir .eq. ibeginDir)iwrap=0
+      if(iwrap .eq. 0)then
+        write(0,9608)ststot(iput-1),ststot(iput),ststot(nstart),
+     &               ststot(nstart+1)
+        write(6,9608)ststot(iput-1),ststot(iput),ststot(nstart),
+     &               ststot(nstart+1)
+ 9608   format("#history #Warning: After filtering: End of history and",
+     &         "Begining have an alignment problem:"/
+     &         "#history # Last-1 Pt:  ",f8.2/
+     &         "#history # Last   Pt:  ",f8.2/
+     &         "#history # 1st    Pt:  ",f8.2/
+     &         "#history # 2nd    Pt:  ",f8.2)
+        
+C       Check if all three same direction
+        if((iendDir.eq.ijoinDir).and.(ijointDir.eq.ibeginDir) )then
+          write(0,9612)
+          write(6,9612)
+ 9612     format("#history # All in same direction.  Eliminate 1st and",
+     &           " last points.")
+          nstart=nstart +1 ! get rid of 1st pt.
+          iput=iput-1      ! get rid of last pt.
+          goto 9620
+        endif
+
+        if(iendDir .eq. ijoinDir)then
+          write(0,9616)
+          write(6,9616)
+ 9616     format("#history # Last and Join in same direction. ",
+     &           "Eliminating the Last point.")
+          iput=iput-1
+          goto 9620
+        endif
+
+        if(ijoinDir .eq. ibeginDir)then
+          write(0,9618)
+          write(6,9618)
+ 9618     format("#history # Join and Begin are same direction.",
+     &           "Eliminating the First point.")
+          nstart=nstart+1
+          goto 9620
+        endif
+      endif
+C     Thinking about this some more:  It would probably achieve the
+C     same effect by adding the 1st point  onto the end of the pre-filter
+C     history and then filtering.   (too late now :)
+C     Perhaps it is better to check "properly" as above anyway.
+
+ 9620 continue
+      write(0,9630)ngood,iput
+      write(6,9630)ngood,iput
+ 9630 format("#history #BugCheck: GoodPtsFound=",i8,
+     &      " GoodPtsSaved=",i8," should be nearly equal?.")
+
+C     When nstart is not equal to 1  anymore we need to shift the
+C     history such that the start point, presently = nstart,  is pt 1
 
 C     Check results with a full print
- 9799 continue
-      do 9800 i=1,ngood
-        write(6,9790)stsm(i),stsb(i),ststot(i),i
- 9790   format("#history #Filteredck ",3(f7.1,1x),i6)
+      icount=0
+      do 9800 i=nstart,iput
+        icount=icount+1
+        write(6,9790)stsm(i),stsb(i),ststot(i),iloadflag(i),icount
+ 9790   format("#history #Filteredck ",3(f7.1,1x),i8,1x,i6)
+        if(nstart .ne. 1)then
+C         Shift the history to compensate for nstart > 1
+          stsm(icount)     =stsm(i)
+          stsb(icount)     =stsb(i)
+          ststot(icount)   =ststot(i)
+          iloadflag(icount)=iloadflag(i)
+        endif
  9800 continue
 
 C     Also write out a file for rainflow count + StrainStrainLife
       open(unit=10,file="loads4rain.out")
-C     Compute the boundaries of the rainflow matrix
-      extra=(ststotmax-ststotmin)/64.
-      xmax=ststotmax+extra
-      xmin=ststotmin-extra
-      write(10,9838)xmax,xmin
+      write(10,9838)ststotmax,ststotmin
  9838 format("#MAX= ",e14.7/"#MIN= ",e14.7/"#BEGIN")
-      write(10,9839)ststot1
- 9839 format(" 0 ",f7.1)
-      do 9850 i=1,ngood
+C      write(10,9839)ststot1   ! not a good idea. Distorts history.
+C 9839 format(" 0 ",f7.1)
+      do 9850 i=nstart,iput
         write(10,9840)i,ststot(i)
  9840   format(i9,1x,f7.1,1x)
  9850 continue
       close(unit=10)
-      write(0,9854)
-      write(6,9854)
- 9854 format("#Wrote ststot loads for rainflow: loads4rain.out")
 
-      nloads=ngood
+      write(0,9854)icount
+      write(6,9854)icount
+ 9854 format("#Wrote ststot ",i8," loads for rainflow: loads4rain.out")
+
+      nloads=icount
       return
       end
+
+
+
 
 C==============================================================
 
