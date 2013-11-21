@@ -1,4 +1,4 @@
-C pipeIntSurfFlaw.f   vers. 3.10   Notched Spec Crack Prop.  FAC oct.31 2013
+C pipeIntSurfFlaw.f   vers. 3.11   Notched Spec Crack Prop.  FAC nov.21 2013
       SAVE
 C  Push-Down List crack prop. program. Semi-ellip. crack on inside pipe surf.
 C  Compile:  gfortran  -g -w -fbounds-check pipeIntSurfFlaw.f  -o pipeIntSurfFlaw
@@ -288,7 +288,7 @@ C---------------------------  Run time input data------------------
   184 continue
       write(6,185)
       write(0,185)
-  185 format("# pipeIntSurfFlaw.f vers. 3.10"/
+  185 format("# pipeIntSurfFlaw.f vers. 3.11"/
      & "#Usage: pipeIntSurfFlaw  scale <histfile  >outfile"/)
 
       nargc = iargc()
@@ -3430,6 +3430,10 @@ C         Shift the history to compensate for nstart > 1
           iloadflag(icount)=iloadflag(i)
         endif
  9800 continue
+C     If history has been shifted for non-zero nstart we need
+      if(nstart .ne. 1)then
+         nstart=1
+      endif
 
 C     Also write out a file for rainflow count + StrainStrainLife
       open(unit=10,file="loads4rain.out")
@@ -3446,8 +3450,8 @@ C 9839 format(" 0 ",f7.1)
       write(0,9854)icount,icount
       write(6,9854)icount,icount
  9854 format("#NLOADSETS= ",i8," (loads in each history repetition ",
-     $       "after filtering"/"#Wrote ststot() out for rainflow. ",
-     $       "nloads= ",i8,"  into file: loads4rain.out")
+     $ "after filtering"/"#Wrote TotStress=(Sm+Sb) out for rainflow. ",
+     $ "nloads= ",i8,"  into file: loads4rain.out")
 
       nloads=icount
       return

@@ -1,4 +1,4 @@
-C  plateEdgeFlaw.f   vers. 3.10   Plate Edge Crack Prop.  FAC nov 02 2013
+C  plateEdgeFlaw.f   vers. 3.11   Plate Edge Crack Prop.  FAC nov 21 2013
       SAVE
 C  Push-Down List crack propagation program.
 C  Compile:  gfortran  -g -w -fbounds-check plateEdgeFlaw.f  -o plateEdgeFlaw
@@ -272,7 +272,7 @@ C---------------------------  Run time input data------------------
   184 continue
       write(6,185)
       write(0,185)
-  185 format("# plateEdgeFlaw.f vers. 3.10"/
+  185 format("# plateEdgeFlaw.f vers. 3.11"/
      & "#Usage: plateEdgeFlaw  scale <histfile  >outfile"/)
 
       nargc = iargc()
@@ -2913,6 +2913,10 @@ C         Shift the history to compensate for nstart > 1
           iloadflag(icount)=iloadflag(i)
         endif
  9800 continue
+C     If history has been shifted for non-zero nstart we need
+      if(nstart .ne. 1)then
+         nstart=1
+      endif
 
 C     Also write out a file for rainflow count + StrainStrainLife
       open(unit=10,file="loads4rain.out")
@@ -2926,9 +2930,11 @@ C 9839 format(" 0 ",f7.1)
  9850 continue
       close(unit=10)
 
-      write(0,9854)icount
-      write(6,9854)icount
- 9854 format("#Wrote ststot ",i8," loads for rainflow: loads4rain.out")
+      write(0,9854)icount,icount
+      write(6,9854)icount,icount
+ 9854 format("#NLOADSETS= ",i8," (loads in each history repetition ",
+     $ "after filtering"/"#Wrote TotStress=(Sm+Sb) out for rainflow. ",
+     $ "nloads= ",i8,"  into file: loads4rain.out")
 
       nloads=icount
       return
