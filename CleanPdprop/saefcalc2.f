@@ -1,4 +1,4 @@
-C saefcalc2.f  #version= 2.1 Calculate life using sae std. fitted (Oct 18 2013)
+C saefcalc2.f  #version= 2.1 Calculate life using sae std. fitted (May 27 2014))
       SAVE
 C Linux Compile:  gfortran -g -w -fbounds-check saefcalc2.f  -o saefcalc2
 C              :  g77 -g saefcalc2.f  -o saefcalc2
