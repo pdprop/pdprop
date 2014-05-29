@@ -37,14 +37,14 @@ TMP2=/tmp/temp222.$$
   echo "<i>Affiliation:  where </i></b><br>" >>$HTML
   date       >>$HTML
 
-  echo "<p>" >>$HTML
   grep \#version\= $1  >$TMP2
   # expecting: #version= 1.9  saefcalc2.f
   read <$TMP2   item1 item2 item3 LEFTOVER
-  echo "<b>$item3 vers.=</b> $item2 <br>"         >>$HTML
+  echo "<b>$item3 vers.=</b> $item2 "         >>$HTML
 
 
 
+echo "<p>" >>$HTML
 echo "Preparing input data summary for html page ..."
 echo "<p>Simulation input data:<br> "            >>$HTML
 
@@ -59,20 +59,41 @@ echo "<b>Multiplication Factor=</b> $item2 <br>"        >>$HTML
 
 
 #      Ok, we have a potential material file in matfile
-       echo "<h2>Crack Initiation Life Results for $1</h2>"          >>$HTML
+       echo "<h2>Crack Initiation Life Results</h2>"          >>$HTML
 
-       echo "<pre>"                                   >>$HTML
-       grep \#xcalc2 <$1  | ./delete1arg                 >>$HTML
-       echo "</pre>"                                  >>$HTML
-
-       echo "Predicted History Repetitions to Initiation:" >>$HTML
+       echo "<h3>Predicted History Repetitions to Initiation:</h3>" >>$HTML
        echo "<pre><b>"                                     >>$HTML
        grep \#xcalc3 <$1  | ./delete1arg      >>$HTML
        echo "</b></pre>"                                   >>$HTML
 
 #      fetch the hysteresis loops for plotting
 
-       echo "<!-- PAGE BREAK -->"                        >>$HTML
+#Fetch boxed cumulative cycle plot and damage plot data
+#    echo "<!-- PAGE BREAK -->"                                   >>$HTML
+    echo "<h3>Cumulative Cycle Plot of History and Damage:</h3>" >>$HTML
+    grep -i \#plothist $1 | ./delete1arg >temp6
+    grep -i \#plotdam  $1 | ./delete1arg >temp7
+
+#   create the gnuplot load file, re-use $TMP3
+    echo "set term pngcairo font \"Arial,12\""  >loadgp6
+    echo "set output \"$1.damage.png\" "       >> loadgp6
+    echo "set logscale x "                     >> loadgp6
+    echo "set grid"                            >> loadgp6
+    echo "set xlabel \"Cumulative Cycles\" "   >> loadgp6
+    echo "set xrange [0.1:*] "                 >> loadgp6
+    echo "set ylabel \"Nominal Stress, MPa\" " >> loadgp6
+
+    echo "set y2label \"% Damage\" "         >> loadgp6
+    echo "set y2range [0.:100.] "            >> loadgp6
+    echo "set format y2 \"%f\"  "            >> loadgp6
+
+    echo "plot \"temp6\" title \"History\" w lp, \"temp7\" axes x1y2 title \"SWaT\" w lp, \"temp7\" u 1:3 axes x1y2 title \"Morrow\" w lp" >> loadgp6
+    gnuplot "loadgp6"
+    echo "<p><img src=\"$1.damage.png\">"  >>$HTML
+    echo "<br> " >>$HTML
+    echo "<i>(Rectangles are Rainflow Cycle Sets: Sorted by Range: largest on Left)</i>" >>$HTML
+
+       echo "<!-- PAGE BREAK -->"                      >>$HTML
        echo "<h3>Local Stress and Strain Response:</h3>" >>$HTML
        grep -i \#plotloops $1 | ./delete1arg >temp5
 #      create the gnuplot load file
@@ -85,30 +106,11 @@ echo "<b>Multiplication Factor=</b> $item2 <br>"        >>$HTML
        gnuplot "loadgp5"
        echo "<p><img src=\"$1ss.png\"><br>"  >>$HTML
 
-#Fetch boxed cumulative cycle plot and damage plot data
-    echo "<!-- PAGE BREAK -->"                                   >>$HTML
-    echo "<h3>Cumulative Cycle Plot of History and Damage:</h3>" >>$HTML
-    grep -i \#plothist $1 | ./delete1arg >temp6
-    grep -i \#plotdam  $1 | ./delete1arg >temp7
 
-#   create the gnuplot load file, re-use $TMP3
-    echo "set term pngcairo font \"Arial,12\""  >loadgp6
-    echo "set output \"$1.damage.png\" "       >> loadgp6
-    echo "set logscale x "                     >> loadgp6
-    echo "set xlabel \"Cumulative Cycles\" "   >> loadgp6
-    echo "set xrange [0.1:*] "                 >> loadgp6
-    echo "set ylabel \"Nominal Stress, MPa\" " >> loadgp6
-
-    echo "set y2label \"% Damage\" "         >> loadgp6
-    echo "set y2label \"% Damage\" "         >> loadgp6
-    echo "set y2range [0.:100.] "            >> loadgp6
-    echo "set format y2 \"%f\"  "            >> loadgp6
-
-    echo "plot \"temp6\" title \"History\" w lp, \"temp7\" axes x1y2 title \"SWaT\" w lp, \"temp7\" u 1:3 axes x1y2 title \"Morrow\" w lp" >> loadgp6
-    gnuplot "loadgp6"
-    echo "<p><img src=\"$1.damage.png\">"  >>$HTML
-    echo "<br> " >>$HTML
-    echo "<i>(Rectangles are Rainflow Cycle Sets: Sorted by Range: largest on Left)</i>" >>$HTML
+    echo "<h3>Fatigue Damage Details for each Cycle Set</h3>" >>$HTML
+       echo "<pre>"                                   >>$HTML
+       grep \#xcalc2 <$1  | ./delete1arg              >>$HTML
+       echo "</pre>"                                  >>$HTML
 
     echo "<!-- PAGE BREAK -->"                                   >>$HTML
     echo "<h2>Appendix 1: Rainflow Cycles </h2>"          >>$HTML

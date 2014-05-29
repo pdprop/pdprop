@@ -1,4 +1,4 @@
-C saefcalc2.f  #version= 1.9 Calculate life using sae std. fitted (Oct 18 2013)
+C saefcalc2.f  #version= 2.1 Calculate life using sae std. fitted (Oct 18 2013)
       SAVE
 C Linux Compile:  gfortran -g -w -fbounds-check saefcalc2.f  -o saefcalc2
 C              :  g77 -g saefcalc2.f  -o saefcalc2
@@ -34,6 +34,11 @@ C  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 C  Try also their web site: http://www.gnu.org/copyleft/gpl.html
 C---------------------------------------------------------------------------
 
+C vers 2.1 Correct Smax and Smin when multiplication factor is  -ve May 27 2014
+C vers 2.0 Allows longer comment sections in Rainflow input file. Mar 15 2014
+C          and increases the dimension of storage for Rainflow cycle sets
+C          See variable  idimRain.  Also change idim  to idimSS for the
+C          strain-stress-life  storage.
 C vers 1.9 Changes to allow easier automatic pdf report generation:
 C          Add identifier to output material file name  #matfile="
 C          Add identifier to output version no:  #version="
@@ -185,19 +190,21 @@ C-----------------------------------------------------------------------------
 
 C     Save the arg line values here:
       integer nargsets
-      real Smaxin(250), Sminin(250), Cyclesin(250)
+      real Smaxin(2000), Sminin(2000), Cyclesin(2000)
 C     And each input will create one of these:
-      real Srangein(250), StressReps(250)
-      real SwatReps(250), StrainReps(250), MorReps(250),GoodReps(250),
-     &     Sigmaxin(250),Sigminin(250),Epsmaxin(250),Epsminin(250),
-     &    DeltaSigin(250),DeltaEpsin(250)
-      real pcswatdam(250),pcstraindam(250),pcstressdam(250),
-     & pcgooddam(250), pcmordam(250)
+      real Srangein(2000), StressReps(2000)
+      real SwatReps(2000), StrainReps(2000), 
+     &     MorReps(2000),GoodReps(2000),
+     &     Sigmaxin(2000),Sigminin(2000),Epsmaxin(2000),Epsminin(2000),
+     &    DeltaSigin(2000),DeltaEpsin(2000)
+      real pcswatdam(2000),pcstraindam(2000),pcstressdam(2000),
+     & pcgooddam(2000), pcmordam(2000)
 
       real Morlife
 
 
 C     Save the digital curves here:
+
 C     Check dimensions in the various subroutines too    !!!!!!!!!!!!
 
       real StressAmp(250), StrainAmp(250), SelasticAmp(250),
@@ -213,11 +220,12 @@ c          from s/r getloop
      &                 ndata,FractureStress,FractureStrain
 
       write(6,50)
-   50 format("#version= 1.9  saefcalc2.f")
+   50 format("#version= 2.1  saefcalc2.f")
 
 Cdidntwork to s/rs      PARAMETER ( IDIM=250 )
-      idim=250
+      idimSS=250
 C         = max dimension of digital curve stuff
+      idimRain=2000 ! max dimension of rainflow cycle sets
 
 
       XMPAS=6.894759
@@ -314,9 +322,10 @@ C         endif
 
 C      This section replaces the bit directly above. Here read stdin
        i=0
-       do 750 j=1,idim
+  750  continue
+C       do 750 j=1,idim  ! This did not allow for extended comments in file.
 C         Read in the rainflow file. Expect comments with #xxxx text
-         read(5,742)inp300
+         read(5,742,end=751)inp300
   742    format(a300)
 C        Check for blank line. 
          if(inp300.eq." ")then
@@ -337,18 +346,26 @@ C        Must be a data line
          i=i+1
          read(inp300,*,end=751,err=760)rangein, xmeanin,
      &            Cyclesin(i),Smaxin(i),Sminin(i)
+C        Check for the old method of specifying end of file:
          if(Smaxin(i).eq.0. .and. Sminin(i).eq.0. .and.
      &      Cyclesin(i).eq.0. )then
-C           Data line is all zeros, old method of exit
+C           Data line is zeros, old method of exit
             i=i-1
             go to 751
          endif
+
+C       Apply the multiplication factor from command line
+C       Doing this here allows for -ve multiplication factors.
+C       i.e.: -ve factors will "flip"  the history.
+        Smaxin(i)=Smaxin(i)*xmultf
+        Sminin(i)=Sminin(i)*xmultf
 C       Make sure max is max
         if(Smaxin(i).lt.Sminin(i))then
           xtemp=Smaxin(i)
           Smaxin(i)=Sminin(i)
           Sminin(i)=xtemp
         endif
+        Srangein(i)=Smaxin(i)-Sminin(i)
 
 C       See if someone put in equal max & min
         Srangein(i)=Smaxin(i)-Sminin(i)
@@ -359,10 +376,6 @@ C       See if someone put in equal max & min
           write(0,*)"#",inp300
           stop
         endif
-C       Apply the multiplication factor from command line
-        Smaxin(i)=Smaxin(i)*xmultf
-        Sminin(i)=Sminin(i)*xmultf
-        Srangein(i)=Smaxin(i)-Sminin(i)
 
         write(6,*)"#Input x MultF : Smax=",Smaxin(i)," Smin=",Sminin(i),
      &            "Srange=",Srangein(i)," Cycles=",Cyclesin(i)
@@ -373,7 +386,7 @@ C       Apply the multiplication factor from command line
           if(overallsmax.lt.Smaxin(i))overallsmax=Smaxin(i)
           if(overallsmin.gt.Sminin(i))overallsmin=Sminin(i)
         endif
-  750 continue
+      goto 750    ! go fetch another input line
 
 C     End of rainflow input file
   751 continue
@@ -522,11 +535,11 @@ C        be an integer.  The value can be changed later to whatever the local fo
 C      Since this is all "Fitted" data expressing a curve, we only need the first 3 items.
 
          ndata=ndata+1
-         if(ndata.gt.idim)then
+         if(ndata.gt.idimSS)then
            write(0,816)
            write(6,816)
-  816      format(" Error too many data points:",i5,
-     &            " recompile saefcalc2.f")
+  816      format("# Error too many data points in strain-life file:",
+     &            i5,"   recompile saefcalc2.f See idimSS ")
            stop
          endif
          read(inp300,*)StrainAmp(ndata), Lifecycles(ndata), 

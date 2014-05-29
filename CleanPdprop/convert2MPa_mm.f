@@ -1,4 +1,4 @@
-C   convert2MPa_mm.f   vers. 1.3   mar 07 2013   FAC
+C   convert2MPa_mm.f   vers. 1.4   dec 10 2013   FAC
       SAVE
 C     Convert points from a digital dadn vs DeltaK  plot into 
 C     da/dn (mm) vs. Delta_K table (mpa_mm)
@@ -21,6 +21,7 @@ C  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 C  Try also their web site: http://www.gnu.org/copyleft/gpl.html
 C---------------------------------------------------------------------------
 
+C vers 1.4 Add output for #deltaKunits= mpa_mm and #dadnUnits= mm Dec10 2013
 C vers 1.3 forks  mkparis2.f  to convert2Mpa_mm.  Uses seperate definition
 C          of the units for deltaK and dadn.
 C vers 1.2 increases no. of data pts to  1250
@@ -96,7 +97,7 @@ C---------------------------------------------------------------------------
 
       write(6,701)
       write(0,701)
-  701 format("# convert2MPa_mm  vers. 1.3 starts..."/
+  701 format("# convert2MPa_mm  vers. 1.4 starts..."/
      &   "# Program convert to table of mpa_mm, from other units table")
 
       XMPAS=6.894759
@@ -377,6 +378,7 @@ C     Create the table.
      & //
      & "#All inputs converted to    MPa*sqrt(mm)   and  mm/cycle"/
      & "#Note that this is same as  N/(mm**(3/2))  and  mm/cycle"
+     & /"#deltaKunits=  mpa_mm"/"#dadnUnits= mm"
      & /)
 
 
