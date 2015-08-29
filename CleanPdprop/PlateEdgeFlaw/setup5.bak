@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# setup5  vers 2.0  local (in this folder) command script to help user 
+# setup5  vers 2.1  local (in this folder) command script to help user 
 #          manage the files required to run plateLongSurfFlaw.f.v3.06
 # Usage:   ./setup5
 
@@ -18,6 +18,7 @@
 # 59 Temple Place -Suite 330, Boston, MA 02111-1307, USA. Try also their
 # web site: http://www.gnu.org/copyleft/gpl.html
 
+# vers 2.1 checks for presence of  #Kt=  in pdprop.env
 # vers 2.0 adds in the FAD check for a tensile test file which is used to
 #          create the "fads.table" file. Jul23 2013
 
@@ -32,7 +33,7 @@ echo
 echo "--------------------   setup5  --------------------------------------------"
 echo 
 echo "This bash command script helps the user prepare the files for the simulation run."
-echo "         (with experience you probably won't need to use this)"
+echo "  (setup5 pre-calculates values of Mm, Mb, Mkm, Mkb etc) "
 echo
 echo "The following files are needed:                  (for format info see Manual)"
 echo "          0  pdprop.env  file: contains run-time info & instructions for sim."
@@ -117,6 +118,11 @@ echo "(all dimensions are mm)";echo
 #     read <$TMP2 item1 item2 LEFTOVER
 #     echo "Check for #L=            : $item1 $item2 ";
 #     echo "(if more than one line of each exists, only the last one is shown)"
+
+    grep ^\#Kt\= pdprop.env | tail -1 >$TMP2
+     read <$TMP2 item1 item2 LEFTOVER
+     echo "Check for #Kt=            : $item1 $item2 (for initiation Calcs.)";
+     echo "(if more than one line of each exists, only the last one is shown)"
 
 echo
 while true; do
@@ -548,10 +554,11 @@ echo "or:"
 echo "                     ls -lt | head -20"
 echo 
 echo "After running the simulations you can prepare a report with the command:"
-echo "             ./makereport2 outputFile"
+echo "             ./makereport5 outputFile"
 echo " for each of your simulation output files."
-echo " The above script \"makereport2\" is located in this folder. You can edit it"
+echo " The above script \"makereport5\" is located in this folder. You can edit it"
 echo "    to alter or add features."
+echo " Note: If you change stuff in pdprop.env it would be good to re-run  setup5"
 echo " Good luck"
 
 rm $TMP2

@@ -43,3 +43,7 @@ For reference on how the material memory logic works the reader is referred to:
 Conle, A., T.R.Oxland, T.H.Topper, "Computer-Based Prediction of Cyclic Deformation
     and Fatigue Behavior," Low Cycle Fatigue ASTM STP 942, 1988, pp.1218-1236
     
+An example of how both the crack initiation and the propagation software can be
+applied to a fatigue life prediction case history is provided here:
+http://fde.uwaterloo.ca/Fde/Crackgrowth/Case5/case5_HeulerSeeger.html
+

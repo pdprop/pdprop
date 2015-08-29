@@ -1,4 +1,4 @@
-C  pipeIntSurfFAD.f   vers. 0.30     FAC jul.26 2013
+C  pipeIntSurfFAD.f   vers. 0.60     FAC aug 27 2015
       SAVE
 C  Computes the FAD data from outputs of pipeIntSurfFlaw.f programs
 C  Compile:  gfortran  -g -w -fbounds-check pipeIntSurfFAD.f  -o pipeIntSurfFAD
@@ -31,6 +31,10 @@ C  You should have received a copy of the GNU General PUblic License along
 C with this program; if not, write to the Free Software Foundation, Inc.,
 C 59 Temple Place -Suite 330, Boston, MA 02111-1307, USA. Try also their
 C web site: http://www.gnu.org/copyleft/gpl.html
+
+C vers 0.6  Fix the indexing for plot interval loops   Aug 22 2015
+C           (loops start near statement no. 1050 )
+
 
 
 C   Expected input format:
@@ -78,16 +82,17 @@ C      Keep same variable names as in plateWeldflaw.f for record reads
      &             stsMembrane,stsBending
       integer*4  nrev,nblk,nact,nrecord
 
-C     Storage for each interval
-      real*4  amaxS(1000),cmaxS(1000),
-     &    xlobj90maxS(1000),xlobj90minS(1000),
-     &    xlobj00maxS(1000),xlobj00minS(1000),
-     &    stsMmaxS(1000),stsMminS(1000),stsBmaxS(1000),stsBminS(1000),
-     &    xKr90maxS(1000),xKr00maxS(1000), SrS(1000),xLrS(1000),
-     &    yKrEOL90S(1000),yKrEOL00S(1000), SrEOLS(1000),xLrEOLS(1000)
-      logical logiFAD1(1000),logiFAD2a(1000),logiFAD2b(1000),
-     &        logiEOL(1000)
-      integer nrevS(1000)
+C     Storage for each plot interval
+C     The extra 1 in 1001 is for remainders.  Aug 27 2015
+      real*4  amaxS(1001),cmaxS(1001),
+     &    xlobj90maxS(1001),xlobj90minS(1001),
+     &    xlobj00maxS(1001),xlobj00minS(1001),
+     &    stsMmaxS(1001),stsMminS(1001),stsBmaxS(1001),stsBminS(1001),
+     &    xKr90maxS(1001),xKr00maxS(1001), SrS(1001),xLrS(1001),
+     &    yKrEOL90S(1001),yKrEOL00S(1001), SrEOLS(1001),xLrEOLS(1001)
+      logical logiFAD1(1001),logiFAD2a(1001),logiFAD2b(1001),
+     &        logiEOL(1001)
+      integer nrevS(1001)
 
       real   xKmat, PmEOL, PbEOL, Syield, Sult, Sflow, Emod
 
@@ -108,7 +113,7 @@ C     Storage for the FAD  diagram points
 
       write(0,180)
       write(6,180)
-  180 format("# pipeIntSurfFAD.f  vers. 0.3 starts...")
+  180 format("# pipeIntSurfFAD.f  vers. 0.6 starts...")
   190 continue
       write(6,191)
       write(0,191)
@@ -547,32 +552,66 @@ C     determine what the total reversals of the test was:
      &       "#MAXREVERSALS= ",i10/
      &       "#MAXBLOCKS= ",i10/
      &       "#NACT= ",i10)
-      if(maxrecords .le. 100000)then
-C         There are not that many recs in this history.  Just bruteforce
-C         analyse all the peaks.
-          lbruteforce=.true.
+
+C     Divide the data into about 1000 intervals for quick plotting
+      nitems= maxrecords-1
+      nIntervals= maxIntervals
+      if( nitems .le. nIntervals)then
+          nIntervals= 1
+C         There are not that many recs items in this history.
           write(0,1015)maxrecords
           write(6,1015)maxrecords
- 1015     format("# Max Recs ",i10," < 100000  Thus just check all.")
-          jrecStart=2
-          jrecEnd=maxrecords
-          go to 5000
+ 1015     format("# Warning! pipeIntSurfFAD: Max Recs ",i10," < 1000  ",
+     &           "Will try to continue  FAD...")
       endif
 
-C     We are dividing the history into maxintervals=1000 intervals
-      nrecsPerInt=(maxrecords-1) / (maxintervals)
-C        Due to roundoff, the last interval may have extra recs.
-      write(0,1020)nrecsPerInt
-      write(6,1020)nrecsPerInt
- 1020 format("#No. Recs per Interval= ",i10)
-      
-      jrecStart=2
-      jrecEnd= jrecStart+nrecsPerInt
+C     We are dividing the history into nIntervals 
+C     At this point nIntervals is either 1 or 1000
+      nrecsPerInt= nitems / nIntervals
+C     Due to roundoff, there may be extra recs. past last interval
+      nremainder= nitems - ( nIntervals * nrecsPerInt )
+      if(nremainder .lt. 0)nremainder=0 !  only 1 interval exists.
+      write(0,1020)nitems, nIntervals,nrecsPerInt,nremainder
+      write(6,1020)nitems, nIntervals,nrecsPerInt,nremainder
+ 1020 format("#pipeIntSurfFAD: For plotting: "/
+     &      "#   No. Recs with reversals: nitems=      ",i10/
+     &      "#   No. of plot Intervals:   nIntervals=  ",i10/
+     &      "#   No. Recs per Interval:   nrecsPerInt= ",i10/
+     &      "#   No. of leftover items:   nremainder=  ",i10)
+ 
       pixri=pi*rinternal !used for Sigref equations
-      do 3900 interval=1,maxintervals
 
-         if(interval .eq. maxintervals)jrecEnd=maxrecords !roundoff compensate
+      interval=0
+ 1050 continue  !-------------------- Begin of loop for each interval
+      interval=interval+1
+      if(interval .eq. 1)then  !initilize 1st interval limits
+         jrecStart=2
+         jrecEnd= jrecStart+nrecsPerInt
+         goto 1060
+      endif
 
+      if(interval .gt. nIntervals)then
+C       All the full intervals have been done.  Check if remaider?
+        if(nremainder .eq. 0)goto 3900 !all done, exit interval loop
+C       There are one or more remainders
+        jrecStart=jrecEnd+1
+        jrecEnd=maxrecords
+        if(jrecStart .gt.maxrecords)then !we are on remainders 2nd time.
+          write(0,*)"#Done with remainders"
+          goto 3900  !finished scans
+        endif
+        write(0,*)"#scanning remainders, jrecStart,jrecEnd= ",
+     &     jrecStart,jrecEnd
+C       It is possible, with a remainder=1 that jrecStart=jrecEnd
+        goto 1060
+      endif
+
+C     Its just a regular interval
+      jrecStart=jrecEnd+1
+      jrecEnd= jrecStart+nrecsPerInt-1
+
+
+ 1060 continue  ! limits are set start interval or remainder loop
 C        Scan this interval of records
 C        Read in the first rec of the interval to set the max mins
          read(60,rec=jrecStart)nrev,totdam90,totdam00,nblk,nact,
@@ -587,7 +626,28 @@ C        Read in the first rec of the interval to set the max mins
              stsMmin=stsMembrane
              stsBmax=stsBending
              stsBmin=stsBending
-      
+
+        if(jrecStart .eq. jrecEnd)then ! happens when remainder=1
+           jrec=jrecEnd
+           write(0,*)"#pipeIntSurfFAD: jrecStart=jrecEnd= ",jrecStart
+           write(6,*)"#pipeIntSurfFAD: jrecStart=jrecEnd= ",jrecStart
+C          we dont need to read it again? it was read just above.
+C           read(60,rec=jrec)nrev,totdam90,totdam00,nblk,nact
+C     &             ,lobj90,lobj00,xdMm,xdMb,xsMm,xsMb
+C     &             ,stsMembrane,stsBending
+C             xlobj90max=lobj90 !stress intensities
+C             xlobj90min=lobj90
+C             xlobj00max=lobj00
+C             xlobj00mix=lobj00
+C
+C             stsMmax=stsMembrane !Stresses
+C             stsMmin=stsMembrane
+C             stsBmax=stsBending
+C             stsBmin=stsBending
+           goto 1901 !skip the interval scan
+        endif
+
+C       Ok, its a regular set of interval points or a set of remainders
         do 1900 jrec=jrecStart+1,jrecEnd
            read(60,rec=jrec)nrev,totdam90,totdam00,nblk,nact
      &             ,lobj90,lobj00,xdMm,xdMb,xsMm,xsMb
@@ -606,6 +666,9 @@ C        Read in the first rec of the interval to set the max mins
            if(stsBmin .gt. stsBending)stsBmin=stsBending
 
  1900    continue  !done scans in this interval
+ 1901    continue  !come here if remainder =1 and no loop required
+
+
          amax=totdam90 
          cmax=totdam00
          nrevIntMax=nrev
@@ -613,6 +676,11 @@ C        Read in the first rec of the interval to set the max mins
 C        Now for this interval, given the various maxima
 C        compute  Kr, Lr, and the KrEOL, and LrEOL
 
+         if(interval .gt. maxIntervals+1)then
+           write(0,*)"#Interval Storage Error: ",
+     &     "interval, jrecStart,jrecEnd,jrec= ",
+     &     interval, jrecStart,jrecEnd,jrec
+         endif
          amaxS(interval)=amax
          cmaxS(interval)=cmax
          nrevS(interval)=nrevIntMax
@@ -649,7 +717,6 @@ C        compute Sigma_ref:  (depends on pi*ri,c and B)
 
          SrS(interval)= Sigref/Sflow
          xLrS(interval)= Sigref/Syield
-
 
 C        Compute End of Life (severe storm near end of life) Kr Sr Lr
 C        EOL stresses are in PmEOL and PbEOL
@@ -712,18 +779,14 @@ Cdebug     &      ,1x,i7,1x,i7,1x,i7
 C     Now check for exceeding  FADs (future code)
 
 C     All done with this interval. go to next one
-      jrecStart=jrecEnd+1
-      jrecEnd= jrecStart+nrecsPerInt
-C     If it is the last interval, compensate for roundoff
-      if(interval .eq. (maxinterval-1) )jrecEnd=maxrecords
-Cdebug      write(0,*)"#jrecStart= ",jrecStart," jrecEnd= ",jrecEnd,
-Cdebug     &          (jrecEnd-jrecStart)
+      goto 1050 !go back up for next interval
 
- 3900 continue  !end of interval loop
+ 3900 continue  !exit from interval loop
 
 
 C     Detailed interval inspection 
  5000 continue
+C       It is not clear if this is necessary.
 
  9000 continue
       close(unit=60)

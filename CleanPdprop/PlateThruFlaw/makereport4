@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# makereport4  vers. 2.1  local (in this folder) command script to help user 
+# makereport4  vers. 2.3  local (in this folder) command script to help user 
 #             transform the outputfile into an html report.
 # Usage:   ./makereport4 simOutFileName
 
@@ -22,6 +22,7 @@
 # 59 Temple Place -Suite 330, Boston, MA 02111-1307, USA. Try also their
 # web site: http://www.gnu.org/copyleft/gpl.html
 
+# vers. 2.3  add code to read Kt  from pdprop.env  Aug25 2015
 # vers. 2.1  adds small plots for begin, end of history
 # Forked from "makereport2" and altered  Aug. 29 2013
 # vers. 2.0  uses the fadInput.rand  file for data input
@@ -71,6 +72,10 @@ echo "<b>a<sub>0</sub>=</b> $item2 mm<br>  "   >>$HTML
 grep ^\#MATERIAL\= pdprop.env >$TMP2
 read <$TMP2   item1 item2 LEFTOVER
 echo " $item1 $item2 <br>"                  >>$HTML
+
+grep ^\#Kt\= pdprop.env >$TMP2
+read <$TMP2   item1 ktvalue LEFTOVER
+echo "<b>Kt=</b> $ktvalue <br>"                  >>$HTML
 
 
 grep ^\#TYPE\= pdprop.env >$TMP2
@@ -365,7 +370,7 @@ echo "Checking if Crack initiation life can be calculated..."
 #      Ok, we have a potential material file in matfile
        echo "<!-- PAGE BREAK -->"                                    >>$HTML
        echo "<h2>Crack Initiation Life Results for $1<br>"           >>$HTML
-       echo " (Assume Kt= 1.8 for welds)  </h2>"                     >>$HTML
+       echo " (Using Kt= $ktvalue )  </h2>"                     >>$HTML
        cp loads4rain.out $1.loads4rain.txt
        cp matfile $1.matfile.txt
        echo "Files Used:"                                   >>$HTML
@@ -374,8 +379,8 @@ echo "Checking if Crack initiation life can be calculated..."
        echo "<li><a href=\"$1.matfile.txt\">Material File</a>"      >>$HTML
        echo "</ul>" >>$HTML
 echo "Starting Initiation calculations..."
-       echo "../saefcalc2  matfile 1.8 <$1.rain.txt >$1.initResults"
-       ../saefcalc2  matfile 1.8 <$1.rain.txt >$1.initResults
+       echo "../saefcalc2  matfile $ktvalue <$1.rain.txt >$1.initResults"
+       ../saefcalc2  matfile $ktvalue <$1.rain.txt >$1.initResults
 
        echo "Predicted History Repetitions to Initiation:" >>$HTML
        echo "<pre><b>"                                     >>$HTML

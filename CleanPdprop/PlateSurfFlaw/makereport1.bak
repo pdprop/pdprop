@@ -239,7 +239,6 @@ echo "Fetching filtered history of Sb and Sm ..."
       echo "set output \"$1.stressB.png\""                  >>loadgp1
 #      echo "set xlabel \"Point No. or Reversals\"  "        >>loadgp1
       echo "set ylabel \"Sm or Sb, Stress MPa\" "           >>loadgp1
-      echo xrange: $iendless50:$nloadsets
       echo "set xrange [$iendless50:$nloadsets]"            >>loadgp1
       echo "plot  \"temp.loads\"  u 1 title \"Sm\" w l, \"\" u 2 title \"Sb\" w l lc 3"  >>loadgp1
       gnuplot "loadgp1"
@@ -436,7 +435,7 @@ echo "Checking if Crack initiation life can be calculated..."
 #      Ok, we have a potential material file in matfile
        echo "<!-- PAGE BREAK -->"                                    >>$HTML
        echo "<h2>Crack Initiation Life Results for $1<br>"           >>$HTML
-       echo " (Assume Kt= 1.8 for welds)  </h2>"                     >>$HTML
+       echo " (Assume Kt= 4.38 for welds)  </h2>"                     >>$HTML
        cp loads4rain.out $1.loads4rain.txt
        cp matfile $1.matfile.txt
        echo "Files Used:"                                   >>$HTML
@@ -445,8 +444,8 @@ echo "Checking if Crack initiation life can be calculated..."
        echo "<li><a href=\"$1.matfile.txt\">Material File</a>"      >>$HTML
        echo "</ul>" >>$HTML
 echo "Starting Initiation calculations..."
-       echo "../saefcalc2  matfile 1.8 <$1.rain.txt >$1.initResults"
-       ../saefcalc2  matfile 1.8 <$1.rain.txt >$1.initResults
+       echo "../saefcalc2  matfile 4.38 <$1.rain.txt >$1.initResults"
+       ../saefcalc2  matfile 4.38 <$1.rain.txt >$1.initResults
 
        echo "Predicted History Repetitions to Initiation:" >>$HTML
        echo "<pre><b>"                                     >>$HTML
