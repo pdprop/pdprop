@@ -75,11 +75,11 @@ echo "<b>L=</b> $item2 mm<br><br>"     >>$HTML
 
 grep ^\#MATERIAL\= pdprop.env >$TMP2
 read <$TMP2   item1 item2 LEFTOVER
-echo " $item1 $item2 <br>"                  >>$HTML
+echo " $item1 $item2   (Initiation) <br>"    >>$HTML
 
 grep ^\#Kt\= pdprop.env >$TMP2
 read <$TMP2   item1 ktvalue LEFTOVER
-echo "<b>Kt=</b> $ktvalue <br>"                  >>$HTML
+echo "<b>Kt=</b> $ktvalue   (Initiation) <br>" >>$HTML
 
 
 grep ^\#TYPE\= pdprop.env >$TMP2
@@ -133,6 +133,8 @@ read <$TMP2 item1 nact  LEFTOVER
 echo "<p>Crack Propagation Results:<br>(<i> " >>$HTML
 grep vers\. $1 | grep plateLongSurfFlaw       >>$HTML
 echo "# makereport2  vers. 2.3"               >>$HTML
+grep vers\. $1FAD.out | grep plateLongFAD     >>$HTML
+
 echo "</i>)<ul><li>No. of Reversals= $nrev revs. or $cycles cycles" >>$HTML
 echo "<li>Final _____ <b>a </b>=      $a   mm"    >>$HTML
 echo "<li>No. of History Reps.= $nblk reps. + $nact revs."  >>$HTML
@@ -470,5 +472,5 @@ echo "</BODY></HTML>" >>$HTML
     echo "     htmldoc --book  -f name.pdf  file1.html  file2.html ...etc"
     echo "Done. In Linux you can view pdf with command: "
     echo "          evince $1.pdf"
-exit
+    exit
 

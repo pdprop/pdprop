@@ -103,7 +103,6 @@ C     Storage for each interval. The extra 1 in 1001 is for remainders
 
       logical logiRunFAD1, logiRunFAD2a, logRunFAD2b
       integer ipinjoint ! =0 if not a pin joint structure.
-      logical lbruteforce
 
 C     Storage for the FAD  diagram points
       real*4  xLrfad1(100),yKrfad1(100)
@@ -773,14 +772,14 @@ Cdebug     &     ,jrecStart,jrecEnd,i
      &     ,xMkm90,xMkb90
      &     ,xfw
  3810    format("#FADints ",e10.3,3(1x,i10)
-     &      ,2(f6.0,1x)
-     &      ,4(f6.1,1x)
-     &      ,3(f6.3,1x)
-     &      ,3(f6.3,1x)
+     &      ,2(1x,f6.0)
+     &      ,4(1x,f6.1)
+     &      ,3(1x,f6.3)
+     &      ,3(1x,f6.3)
 Cdebug     &      ,1x,i7,1x,i7,1x,i7
-     &      ,2(f6.4,1x)
-     &      ,2(f6.4,1x)
-     &      ,f6.4
+     &      ,2(1x,f6.4)
+     &      ,2(1x,f6.4)
+     &      ,1x,f6.4
      &   )
 
 C     Now check for exceeding  FADs

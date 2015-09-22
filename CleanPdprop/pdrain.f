@@ -1,4 +1,4 @@
-c  pdrain.f  v2.1   prog to rainflow count a column of data. Apr.12 2013
+c  pdrain.f  v1.1   prog to rainflow count a column of data. Apr.12 2013
       SAVE
 c Compile:  gfortran -g -Wuninitialized  pdrain.f  -o pdrain
 c Usage:     pdrain ichan  <infile >outfile
@@ -24,6 +24,8 @@ C  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 C  Try also their web site: http://www.gnu.org/copyleft/gpl.html
 C---------------------------------------------------------------------------
 
+C  vers. 1.1 fix bug: endless loop when max point is last point.
+C        See "Sep2015" below.
 C  vers. 0.9 forked from hilo2.f v2.1 and pdprop.f v0.2
 C  hilo2.f is an opensource program from FatigueDes+Eval. Comm.
 C  pdprop.f is an opensource prog. from A.Conle
@@ -82,7 +84,7 @@ C     Test if -Wuninitilized  warning works in gfortran:
 C      i=ifix(x)
 C     Works!
 
-      write(0,*) "#pdrain vers. 0.9 Starts. Usage: ",
+      write(0,*) "#pdrain vers. 1.1 Starts. Usage: ",
      &" pdrain ichan <in  >out"
 
 C
@@ -308,6 +310,7 @@ C      a single large cycle.
 
 
   200 continue
+C  Forked from:
 C  pdprop.f   vers. 0.2  Notched Spec Crack Prop.  FAC apr.22 2012
 C  Push-Down List crack propagation program.
 C  Explanation of primary variables used=
@@ -401,24 +404,33 @@ C     new reversal point.
       iupdown=-iupdown
 
  3012 continue     !  Loop  to find next reversal value.--------
+      if(iphase .eq. 3 )then
+C       we have hit the end of history,
+        goto 5000
+      endif
+
       npoint=npoint+1
+CSep2015 bug:  If the max point is the last point we got an endless loop
+C              in this section. In that case nstart=ndatalines
+C        The first time around in this case npoint=nstart=ndatalines.
+C        We need to NOT go to 1st point, but must run the largest
+C        xvalue(nstart) first before setting npoint to 1
       if(npoint .gt. ndatalines)then
-        write(0,*)"#Wrap npoint around to xvalue(1)..."
+        write(0,*)"#Wrap npoint= around to xvalue(1)..."
         iphase=2
         if(debug)write(6,*)"#-----------iphase=2 -------------"
         npoint=1
       endif
 
       if(iphase .eq. 2 .and. npoint .eq. nstart)then
+C        We have run thru all phase 2 pts and are at the end of points.
+        iphase=3
+        write(0,*)"#pdrain: Last ramp. iphase=3."
 C        Finish the ramp to the largest excursion xvalue(nstart)
         lobj=xvalue(nstart)
         go to 3050
       endif
 
-      if(iphase .eq. 2 .and. npoint .gt. nstart)then
-C       we have hit the end of history,
-        goto 5000
-      endif
 C     Ok, we have the next potential data point
       trialpoint1= xvalue(npoint)
 
