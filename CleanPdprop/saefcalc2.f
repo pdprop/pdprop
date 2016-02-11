@@ -1,4 +1,4 @@
-C saefcalc2.f  #version= 2.1 Calculate life using sae std. fitted (May 27 2014))
+C saefcalc2.f  #version= 2.2 Calculate life using sae std. fitted Feb 7 2016
       SAVE
 C Linux Compile:  gfortran -g -w -fbounds-check saefcalc2.f  -o saefcalc2
 C              :  g77 -g saefcalc2.f  -o saefcalc2
@@ -8,6 +8,9 @@ C Sun Compile  :  f77 -g -Bstatic saefcalc2.f  -o saefcalc2
 C Usage: saefcalc2  matl_fitted_file multfactor <rainflow_file  >outfile
 C                        multfactor  is a factor to scale the rainflow file
 C                        matl_fitted_file  is the digital fitted fatigue curve file
+C For a script to postprocess output from this program see "makeInitReport"
+C or the script at:
+C https://github.com/pdprop/pdprop/blob/Master/CleanPdprop/makeRepSaefcalc2
 C
 C Use fatigue data file and a SAE standard rainflow file as input. (fac Oct25/04)
 C In the rainflow file the data lines are assumed to be:
@@ -34,6 +37,7 @@ C  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 C  Try also their web site: http://www.gnu.org/copyleft/gpl.html
 C---------------------------------------------------------------------------
 
+C vers 2.2 Allow Comment lines that do not start at col. 1  Feb.7 2016
 C vers 2.1 Correct Smax and Smin when multiplication factor is  -ve May 27 2014
 C vers 2.0 Allows longer comment sections in Rainflow input file. Mar 15 2014
 C          and increases the dimension of storage for Rainflow cycle sets
@@ -164,14 +168,9 @@ C      289.        85.2             2    230.       -59.4
 C-----------------------------------------------------------------------------
 
 
-      CHARACTER*1   INP1(80)
-      CHARACTER*5   INP5(16),JNP5(16)
-      CHARACTER*10  INP10(8),JNP10(56)
       character*11  clifeout(10)
 
-      CHARACTER*80  JNP80(7),INP80, INP80temp 
-      EQUIVALENCE  (INP1(1),INP5(1),INP10(1),INP80),
-     &             (JNP5(1),JNP10(1),JNP80(1))
+      CHARACTER*80  INP80,INP80temp 
 
       character*300  inp300,jnp300,Cwebpage
       character*1    inpone(300),jnpone(300)
@@ -220,7 +219,7 @@ c          from s/r getloop
      &                 ndata,FractureStress,FractureStrain
 
       write(6,50)
-   50 format("#version= 2.1  saefcalc2.f")
+   50 format("#version= 2.2  saefcalc2.f")
 
 Cdidntwork to s/rs      PARAMETER ( IDIM=250 )
       idimSS=250
@@ -229,7 +228,7 @@ C         = max dimension of digital curve stuff
 
 
       XMPAS=6.894759
-C     Set some default values in case user forgets
+C     Set some default values in case user forgets to enter item
       stressunits="MPA"
       strainunits="strain"
       lifeunits="reversals"
@@ -246,6 +245,8 @@ C     Set some default values in case user forgets
       sorttype="life"
       Xmagfactor= 1.0
       Xmeanadd= 0.
+
+      inputLineNo=0  !counts input lines in a file
 
 C  Check the number of args. Must be in sets of three
 C
@@ -327,6 +328,8 @@ C       do 750 j=1,idim  ! This did not allow for extended comments in file.
 C         Read in the rainflow file. Expect comments with #xxxx text
          read(5,742,end=751)inp300
   742    format(a300)
+         inputLineNo=inputLineNo+1
+
 C        Check for blank line. 
          if(inp300.eq." ")then
            write(6,*)
@@ -335,13 +338,42 @@ C        Check for blank line.
 Cbugfix  Oct24/05 : Was: read(inp300,*)INP80  (Solaris bombs out on data line)
          read(inp300,"(a80)")INP80
 
-         if(INP1(1).eq."#")then
+         if(inpone(1).eq."#")then
 C          comment line, write and skip
            uno=6
            call WR(uno,inp300)
-           go to 750
+           go to 750  ! fetch next line
          endif
-           
+C        Maybe the "#" comes in a later column?
+         do 744 icheck=1,300
+           if(inpone(icheck).eq." ")goto 744
+C          it is not a space.  Check for comment
+           if(inpone(icheck).eq."#")then
+             uno=6
+             call WR(uno,inp300)
+             go to 750  ! fetch next line
+           endif
+C          It might still be garbage text
+           if(inpone(icheck).eq."." .or.
+     &      inpone(icheck).eq."-" .or.
+     &      inpone(icheck).eq."+" .or.
+     &      inpone(icheck).eq."0" .or.
+     &      inpone(icheck).eq."1" .or.
+     &      inpone(icheck).eq."2" .or.
+     &      inpone(icheck).eq."3" .or.
+     &      inpone(icheck).eq."4" .or.
+     &      inpone(icheck).eq."5" .or.
+     &      inpone(icheck).eq."6" .or.
+     &      inpone(icheck).eq."7" .or.
+     &      inpone(icheck).eq."8" .or.
+     &      inpone(icheck).eq."9" )goto 746 ! yes it is a number
+C        No, it must be garbage text
+            write(0,*)"#In rainflow file at line= ",inputLineNo
+            write(0,*)"#  Not a comment and Not data line. Skip."
+            goto 750  !fetch new line
+  744   continue    ! end of 1st char check loop
+
+  746    continue
 C        Must be a data line
          i=i+1
          read(inp300,*,end=751,err=760)rangein, xmeanin,
@@ -1042,7 +1074,7 @@ C            and           Sminin(1),Sigminin(1),Epsminin(1)
 C         Now find this smaller loops stuff
 
 C         Now place the upper tip. Its attached to the biggest 1/2 cycle (1)
-	  DiffS=Smaxin(iloop)-Sminin(1)
+          DiffS=Smaxin(iloop)-Sminin(1)
 C         Get the DS & DE to get us there
           Samp=DiffS/2.
           call getLoad2StressStrain(Samp,Sigamp,Epsamp,iexit)
@@ -1263,7 +1295,7 @@ C     Get the first 10 chars from each of first two names
       write(6,2010)
  2010 format("#xcalc2 Loop   Smax    Smin         N  Sigmax ",
      & " Sigmin Delta Epsmax Epsmin DeltaEps ",
-     & " %Eps %SWaT %Sts %Morr %Goodm ")
+     & " %Eps %SWT  %Sts %Morr %Goodm ")
       do 2020 iloop=1,nargsets
       write(6,2014)iloop, Smaxin(iloop),Sminin(iloop),Cyclesin(iloop),
      & Sigmaxin(iloop),Sigminin(iloop),DeltaSigin(iloop),
@@ -1308,7 +1340,7 @@ Cbugfix  Oct24/04 Widen local stress format fields to allow -1999. :
       endif
 
       write(6,2028)
- 2028 format("#xcalc3  StrainLife_Reps SWaT_Life_Reps ",
+ 2028 format("#xcalc3  StrainLife_Reps SWT_Life_Reps  ",
      &   "StressLife_Reps   Morrow_Reps   Goodman_Reps ",
      &   "(Reps= Repetions)" )
       write(6,2030)(clifeout(i),i=1,5)
@@ -1730,6 +1762,9 @@ C---------------------------------------------------------
      &           iexit)
       SAVE
 C     Given Load_Amp (could be FEA Stress Ampl.), interpolate Strain &Stress
+C     The saefcalc2.f and saefcalc3.f versions use log-log interp.
+C     The Crack Prop versions and pdStressStrain.f  use linear interp. 
+C     of ~1000 equally space points for speed.
 
       real StressAmp(250), StrainAmp(250), SelasticAmp(250),
      &     Lifecycles(250), PlstrainAmp(250), ElstrainAmp(250),

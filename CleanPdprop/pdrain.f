@@ -1,4 +1,4 @@
-c  pdrain.f  v1.1   prog to rainflow count a column of data. Apr.12 2013
+c  pdrain.f  v1.2   prog to rainflow count a column of data. Feb.06 2016
       SAVE
 c Compile:  gfortran -g -Wuninitialized  pdrain.f  -o pdrain
 c Usage:     pdrain ichan  <infile >outfile
@@ -24,6 +24,9 @@ C  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 C  Try also their web site: http://www.gnu.org/copyleft/gpl.html
 C---------------------------------------------------------------------------
 
+C  vers. 1.2 Minor change: make comment output lines start in column 1
+C        Change ERROR announce when returning to start point of
+C        counting (see statment no. 1500 and 2500)
 C  vers. 1.1 fix bug: endless loop when max point is last point.
 C        See "Sep2015" below.
 C  vers. 0.9 forked from hilo2.f v2.1 and pdprop.f v0.2
@@ -84,8 +87,10 @@ C     Test if -Wuninitilized  warning works in gfortran:
 C      i=ifix(x)
 C     Works!
 
-      write(0,*) "#pdrain vers. 1.1 Starts. Usage: ",
-     &" pdrain ichan <in  >out"
+      write(0,5)
+      write(6,5)
+    5 format("#pdrain vers. 1.2 Starts. Usage: ",
+     &" pdrain ichan <in  >out")
 
 C
       nargc = iargc()
@@ -111,6 +116,7 @@ C
       NL=0          !counter for line no. in file
       ndatalines=0
 
+C-------------------------------------------------------------
 C     Find the first data line, and initilize max min registers
   110 continue
       read(UNI,111,end=112)jnp200
@@ -136,7 +142,7 @@ c          it is a non blank char
   120    continue
 c        If 1st char is a number or + or - or .  then assume it is a point number
 c        otherwise it is a character word and of no interest
-         if(jnp1(n).eq."." .or.
+      if(jnp1(n).eq."." .or.
      &      jnp1(n).eq."-" .or.
      &      jnp1(n).eq."+" .or.
      &      jnp1(n).eq."0" .or.
@@ -151,7 +157,7 @@ c        otherwise it is a character word and of no interest
      &      jnp1(n).eq."9" )then
 C           yes it is a number
 
-C     Allow nlistmax columns max.  This is the first data line.  
+C       Allow nlistmax columns max.  This is the first data line.  
 C          We only want data column  "ncol"
         ndatalines=ndatalines+1
 
@@ -254,7 +260,7 @@ c        with this data line. Go fetch the next line
   170   continue
         write(0, 172)NL,jnp200
         write(6, 172)NL,jnp200
-  172   format("#ERROR: non-number in file line no=",i6,
+  172   format("#WARNING: non-number in file line no=",i6,
      &  " : "/a200/"#***Assuming line is a comment...")
 C       Keep going
         go to  140
@@ -564,7 +570,8 @@ C     &         tlstr(1),clstr(1),totdam,nrev)
 C     because we started at the largest excursion.
       if(debug)write(6,*)"#1165 same ld, jmax,imin= ",jmax,imin
       write(0,*)"#Error: unmatched 1/2 cycle,  npoint= ",npoint
-      write(6,*)"#Error: unmatched 1/2 cycle,  npoint= ",npoint
+      write(6,1167)npoint
+ 1167 format("#Error: unmatched 1/2 cycle,  npoint= ",i6)
       nptc=0
       nptt=0
       go to 1500
@@ -580,7 +587,8 @@ C     &    tlstr(1),clstr(2), totdam,nrev)
       mcount(imin,jmax)=mcount(imin,jmax)+0.5
       if(debug)write(6,*)"#1170 : jmax,imin= ",jmax,imin
       write(0,*)"#Error: return to monotonic,  npoint= ",npoint
-      write(6,*)"#Error: return to monotonic,  npoint= ",npoint
+      write(6,1173)npoint
+ 1173 format("#Error: return to monotonic,  npoint= ",i6)
 c     Eliminate the closed loop.
       nptc=0
       nptt=0
@@ -600,7 +608,13 @@ c     Enter the rev in the P.D. list
       go to 3000
 
 C     Deformation is occurring on the monotonic curve again.
+C     If this is the start point of the counting it is ok in pdrain.f
  1500 continue
+      if(npoint .ne. nstart )then
+      write(0,*)"#Error: we are back on monotonic,  npoint= ",npoint
+      write(6,*)npoint
+ 1504 format("#Error: we are back on monotonic,  npoint= ",i6)
+      endif
 C 1500 dld=abs(lobj)
 c     Subtract damage of previous use of monotonic curve (=0 in cyc )
       go to 600
@@ -673,7 +687,8 @@ C     &        clstr(1),totdam,nrev)
       if(debug)write(6,*)"#2165 : jmax,imin= ",jmax,imin
 C       because we started with the max excursion
       write(0,*)"#Error: unmatched 1/2 cycle,  npoint= ",npoint
-      write(6,*)"#Error: unmatched 1/2 cycle,  npoint= ",npoint
+      write(6,*)npoint
+ 2167 format("#Error: unmatched 1/2 cycle,  npoint= ",i6)
       nptc=0
       nptt=0
       go to 2500
@@ -706,10 +721,14 @@ C      dam=SMITH(dld,so,sobj,eo,eobj,totdam,nrev)
       go to 3000
 
 C     Deformation is occurring on the monotonic curve again.
+C     If this is the start point of the counting it is ok in pdrain.f
  2500 continue
 C 2500 dld=abs(lobj)
+      if(npoint .ne. nstart )then
       write(0,*)"#Error: we are back on monotonic,  npoint= ",npoint
-      write(6,*)"#Error: we are back on monotonic,  npoint= ",npoint
+      write(6,*)npoint
+ 2504 format("#Error: we are back on monotonic,  npoint= ",i6)
+      endif
 c     Subtract damage of previous use of monotonic curve (=0 in cyc )
 C      totdam=totdam - tldam(1)
 
