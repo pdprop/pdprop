@@ -1,4 +1,4 @@
-C   convert2MPa_mm.f   vers. 1.4   dec 10 2013   FAC
+C   convert2MPa_mm.f   vers. 1.51   Feb 13 2018   FAC
       SAVE
 C     Convert points from a digital dadn vs DeltaK  plot into 
 C     da/dn (mm) vs. Delta_K table (mpa_mm)
@@ -21,6 +21,8 @@ C  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 C  Try also their web site: http://www.gnu.org/copyleft/gpl.html
 C---------------------------------------------------------------------------
 
+C vers 1.51 Minor format changes for convertsion statement. Feb 13 2018
+C vers 1.5 Minor format changes.  Jan 29 2018
 C vers 1.4 Add output for #deltaKunits= mpa_mm and #dadnUnits= mm Dec10 2013
 C vers 1.3 forks  mkparis2.f  to convert2Mpa_mm.  Uses seperate definition
 C          of the units for deltaK and dadn.
@@ -42,6 +44,7 @@ C   11.7759 4.04328e-08
 C    etc...
 C                      # File "haddadG40.11dadn_no-Lo.txt"  is an example file
 C---------------------------------------------------------------------------
+C See:   http://www.zentech.co.uk/zencrack_support_unitconversion.htm  Jan.2018
 
 C e.g.:   Output file format is a table, preceeded by comments:
 C   #Name= G40.21-50A                    
@@ -51,16 +54,20 @@ C    #Got Original #dKc=    100.00000
 C    #Got Original  #A=   4.99999997E-09
 C    #Got Original  #m=    1.9000000    
 C   #Conversions:
-C   # 1 ksi*sqrt(inch) = 1.0989*MPa*sqrt(m)
-C   # 1 MPa*sqrt(m)  =   31.6228*N/(mm**(3/2) )
-C   # 1 MPa*sqrt(mm) =         1 N/(mm**(3/2) )
+C   # 1 ksi*sqrt(inch) = 34.7485  Mpa*sqrt(mm)
+C   # 1 MPa*sqrt(m)  =   31.6228  Mpa*sqrt(mm)
+C   # 1 MN*m**(-3/2) =   31.6228  Mpa*sqrt(mm)
+C
+C   # 1 MPa*sqrt(m)  =   31.6228  N/(mm**(3/2) )
+C   # 1 MPa*sqrt(mm) =         1  N/(mm**(3/2) )
+C   # 1 ksi*sqrt(inch) =  1.0989  MPa*sqrt(m)
 C   
 C   #All inputs converted to    MPa*sqrt(mm)   and  mm/cycle
 C   #Note that this is same as  N/(mm**(3/2))  and  mm/cycle
 C   
 C   #deltaKunits= mpa_mm
 C   #dadnunits=  mm
-C   #   mm/cycle    MPa*sqrt(mm)
+C   #   MPa*sqrt(mm)  mm/cycle 
 C   #     dk            da/dn  
 C   0.6255053E+03  0.3081921E-04
 C   0.3475030E+04  0.8013158E-03
@@ -97,8 +104,17 @@ C---------------------------------------------------------------------------
 
       write(6,701)
       write(0,701)
-  701 format("# convert2MPa_mm  vers. 1.4 starts..."/
+  701 format("# convert2MPa_mm  vers. 1.51 starts..."/
      &   "# Program convert to table of mpa_mm, from other units table")
+      write(0,702)  
+  702 format("#Conversions used: "/
+     & "# 1 ksi*sqrt(inch) = 34.7485  Mpa*sqrt(mm)   (set ksi_in )"/
+     & "# 1 ksi*sqrt(inch) = 1.0989   MPa*sqrt(m)"/
+     & "# 1 MPa*sqrt(m)  =   31.6228  N/(mm**(3/2) ) (set mpa_m )"/
+     & "# 1 MPa*sqrt(mm) =         1  N/(mm**(3/2) )"/
+     & "# 1 MN*m**(-3/2) =   31.6228  Mpa*sqrt(mm)   (set mpa_m )"/
+     &)
+
 
       XMPAS=6.894759
 C     Set some values to check if user forgets inputs
@@ -196,17 +212,31 @@ C          11.0953 4.18774e-07
            stop
          endif
 
-         if(deltaKunits .eq. "ksi_in")then
-C           # 1 ksi*sqrt(inch) = 1.0989*MPa*sqrt(m)
-C           # 1 MPa*sqrt(m)  =   31.6228*N/(mm**(3/2) )
-C           # 1 MPa*sqrt(mm) =         1 N/(mm**(3/2) )
+C   # 1 ksi*sqrt(inch) = 34.7485  Mpa*sqrt(mm)
+C   # 1 MPa*sqrt(m)  =   31.6228  Mpa*sqrt(mm)
+C   # 1 MN*m**(-3/2) =   31.6228  Mpa*sqrt(mm)
+C
+C   # 1 MPa*sqrt(m)  =   31.6228  N/(mm**(3/2) )
+C   # 1 MPa*sqrt(mm) =         1  N/(mm**(3/2) )
+C   # 1 ksi*sqrt(inch) =  1.0989  MPa*sqrt(m)  (some argument about last digit)
+
+         if(deltaKunits .eq. "ksi_in" .or.
+     &      deltaKunits .eq. "ksi_inch"
+     &     )then
             dk1(ndata)= dk0
             dk2(ndata)= 1.0989 * 31.6228 * dk0
+            goto 830
          endif
-         if(deltaKunits .eq. "mpa_m")then
+         if(deltaKunits .eq. "mpa_m" .or.
+     &      deltaKunits .eq. "mpa_meter" .or.
+     &      deltaKunits .eq. "Mpa_meter" .or.
+     &      deltaKunits .eq. "MPa_meter" .or.
+     &      deltaKunits .eq. "MPA_meter" 
+     &     )then
 C           deltaK data  is in MPA*sqrt(m)
             dk1(ndata)= dk0
             dk2(ndata)=   31.6228*dk0
+            goto 830
          endif
          if(deltaKunits .eq. "mpa_mm")then
 C           deltaK data  is in MPA*sqrt(mm)
@@ -214,6 +244,7 @@ C           deltaK data  is in MPA*sqrt(mm)
             dk2(ndata)= dk0   ! no change
          endif
 
+  830   continue
          if(dadnunits .eq. "inch")then
             dadn1(ndata)=dadn0
             dadn2(ndata)= 25.4*dadn0
@@ -372,9 +403,11 @@ C      endif
 C     Create the table.
       write(6,1006)
  1006 format("#Conversions:"/
-     & "# 1 ksi*sqrt(inch) = 1.0989*MPa*sqrt(m)"/
-     & "# 1 MPa*sqrt(m)  =   31.6228*N/(mm**(3/2) )"/
-     & "# 1 MPa*sqrt(mm) =         1 N/(mm**(3/2) )"
+     & "# 1 ksi*sqrt(inch) = 34.7485  Mpa*sqrt(mm)"/
+     & "# 1 ksi*sqrt(inch) = 1.0989   MPa*sqrt(m)"/
+     & "# 1 MPa*sqrt(m)  =   31.6228  N/(mm**(3/2) )"/
+     & "# 1 MPa*sqrt(mm) =         1  N/(mm**(3/2) )"/
+     & "# 1 MN*m**(-3/2) =   31.6228  Mpa*sqrt(mm) "
      & //
      & "#All inputs converted to    MPa*sqrt(mm)   and  mm/cycle"/
      & "#Note that this is same as  N/(mm**(3/2))  and  mm/cycle"

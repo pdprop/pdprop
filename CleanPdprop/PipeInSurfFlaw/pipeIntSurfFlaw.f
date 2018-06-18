@@ -1,4 +1,4 @@
-C pipeIntSurfFlaw.f   vers. 3.11   Notched Spec Crack Prop.  FAC nov.21 2013
+C pipeIntSurfFlaw.f   vers. 4.0  Notched Spec Crack Prop.  FAC jun.15 2018
       SAVE
 C  Push-Down List crack prop. program. Semi-ellip. crack on inside pipe surf.
 C  Compile:  gfortran  -g -w -fbounds-check pipeIntSurfFlaw.f  -o pipeIntSurfFlaw
@@ -26,6 +26,8 @@ C web site: http://www.gnu.org/copyleft/gpl.html
 C Note that some subroutines included in this work are from GNU GPL licenced
 C program:  http://fde.uwaterloo.ca/Fde/Calcs/saefcalc1.html
 
+C vers. 4.0  Fix double division by 2 of damage. See last line of getCracks()
+C            Bug found by W.H.Liang Jun 15 2018 (thanks!)
 C vers. 3.10 Replace getPeakLoads() s/r  to remove small cycles Oct 31 2013
 C            and align the end and begining of points in the history block.
 C            Also introduce (but not yet use) a cycle repetition factor.
@@ -288,7 +290,7 @@ C---------------------------  Run time input data------------------
   184 continue
       write(6,185)
       write(0,185)
-  185 format("# pipeIntSurfFlaw.f vers. 3.11"/
+  185 format("# pipeIntSurfFlaw.f vers. 4.0"/
      & "#Usage: pipeIntSurfFlaw  scale <histfile  >outfile"/)
 
       nargc = iargc()
@@ -2418,8 +2420,9 @@ C     Ok, we are equal to or above the first point
 C     No?  Ok, we are below the n data point, time to interpolate
       frac=(dldlog-logdeltaK(n-1))/logdiffdk(n)
       dam=10**(frac*logdiffdadn(n) + logdadn(n-1) )
+C     Divide by 2 is done in mainline  June 16 2018
 C     Divide by 2 to make it per 1/2 cycle
-      dam=dam/2.0
+C      dam=dam/2.0
       return
       end
       

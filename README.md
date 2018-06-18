@@ -39,11 +39,17 @@ script is provided to help the user with the problem definition.
 It is expected that the user has an understanding of metal fatigue and the terms used in
 BS7910.
 
+Note:  Some example result files may be out of data due to software changes.
+
 For reference on how the material memory logic works the reader is referred to:
 Conle, A., T.R.Oxland, T.H.Topper, "Computer-Based Prediction of Cyclic Deformation
     and Fatigue Behavior," Low Cycle Fatigue ASTM STP 942, 1988, pp.1218-1236
     
 An example of how both the crack initiation and the propagation software can be
 applied to a fatigue life prediction case history is provided here:
-http://fde.uwaterloo.ca/Fde/Crackgrowth/Case5/case5_HeulerSeeger.html
+  http://fde.uwaterloo.ca/Fde/Crackgrowth/Case5/case5_HeulerSeeger.html
+
+A tutorial on fatigue testing and calculation can be found at
+  http://fde.uwaterloo.ca/FatigueClass/classIndex.html
+
 
