@@ -1,5 +1,5 @@
 C  plateEdgeFlaw.f   vers. 4.0   Plate Edge Crack Prop.  FAC jun 16 2018
-       SAVE
+        SAVE
 C  Push-Down List crack propagation program.
 C  Compile:  gfortran  -g -w -fbounds-check plateEdgeFlaw.f  -o plateEdgeFlaw
 C  Usage:   plateEdgeFlaw  scaleFactor <loadHistory >outputFile

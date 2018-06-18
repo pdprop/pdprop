@@ -40,7 +40,7 @@ It is expected that the user has an understanding of metal fatigue and the terms
 BS7910.
 
 Note:  Some example result files may be out of data due to software changes.
-      These will be updated shortly.
+      These will be updated shortly
 
 For reference on how the material memory logic works the reader is referred to:
 Conle, A., T.R.Oxland, T.H.Topper, "Computer-Based Prediction of Cyclic Deformation
