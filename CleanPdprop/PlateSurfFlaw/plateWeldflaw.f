@@ -1,5 +1,5 @@
 C  plateWeldflaw.f  vers. 4.0   Notched Spec Crack Prop.  jun.16 e018
-      SAVE
+       SAVE
 C  Push-Down List crack prop. program. Semi-ellip. crack on surf near weld.
 C  Compile:  gfortran  -g -w -fbounds-check plateWeldflaw.f  -o plateWeldflaw
 C  Usage:   plateWeldflaw  scaleFactor <loadHistory >outputFile

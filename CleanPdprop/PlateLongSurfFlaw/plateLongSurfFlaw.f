@@ -1,5 +1,5 @@
 C  plateLongSurfFlaw.f   vers. 4.0   Notched Spec Crack Prop.  jun 16 2018
-      SAVE
+       SAVE
 C  Push-Down List crack propagation program.
 C  Compile:  gfortran  -g -w -fbounds-check plateLongSurfFlaw.f  -o plateLongSurfFlaw
 C  Usage:   plateLongSurfFlaw  scaleFactor <loadHistory >outputFile

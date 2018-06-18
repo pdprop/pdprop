@@ -1,5 +1,5 @@
 C  plateThruFlaw.f  vers. 4.0  Notched Spec Crack Prop.  jun.16 2018
-      SAVE
+       SAVE
 C  Push-Down List crack propagation program.
 C  Compile:  gfortran  -g -w -fbounds-check plateThruFlaw.f  -o plateThruFlaw
 C  Usage:   plateThruFlaw  scaleFactor <loadHistory >outputFile
