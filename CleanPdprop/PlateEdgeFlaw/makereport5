@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# makereport5  vers. 2.3  local (in this folder) command script to help user 
+# makereport5  vers. 2.4  local (in this folder) command script to help user 
 #             transform the outputfile into an html report.
 # Usage:   ./makereport5 simOutFileName
 
@@ -22,6 +22,7 @@
 # 59 Temple Place -Suite 330, Boston, MA 02111-1307, USA. Try also their
 # web site: http://www.gnu.org/copyleft/gpl.html
 
+# vers 2.4 Slight format changes 2018
 # vers. 2.3  add code to read Kt  from pdprop.env  Aug25 2015
 # vers. 2.0  uses the fadInput.rand  file for data input
 
@@ -124,7 +125,7 @@ read <$TMP2 item1 nact  LEFTOVER
 
 echo "<p>Crack Propagation Results:<br>(<i> " >>$HTML
 grep vers\. $1 | grep plateEdgeFlaw           >>$HTML
-echo "# makereport5  vers. 2.1"               >>$HTML
+echo "# makereport5  vers. 2.4"               >>$HTML
 echo "</i>)<ul><li>No. of Reversals= $nrev revs. or $cycles cycles" >>$HTML
 echo "<li>Final _____ <b>a </b>=      $a   mm"    >>$HTML
 echo "<li>No. of History Reps.= $nblk reps. + $nact revs."  >>$HTML
@@ -219,13 +220,15 @@ echo "Fetching filtered history of Sb and Sm ..."
 
 echo "Plotting da/dn table from text results file ..."
     grep ^\#dadnTable $1 |../delete1arg  >dadntable$$
-    echo "set term pngcairo size 480,360 font \"Arial,12\"" >loadgp1b
+    echo "set term pngcairo size 480,360 font \"Arial,10\"" >loadgp1b
     echo "set title \"Material Crack Propagation Data\""  >>loadgp1b
     echo "set logscale xy"                                >>loadgp1b
     echo "set grid"                                       >>loadgp1b
     echo "set output \"$1.dadn.png\""                     >>loadgp1b
     echo "set xlabel \"Delta K,  MPa*sqrt(mm)\"  "        >>loadgp1b
     echo "set ylabel \"da/dN,  mm/Cycle\" "               >>loadgp1b
+    echo "set format y '%.0tE%+T'"                        >>loadgp1b
+    echo "set xrange [10:5000]"                           >>loadgp1b
     echo "plot  \"dadntable$$\"  u 1:2 title \"$1\" w lp" >>loadgp1b
     gnuplot "loadgp1b"
     echo "<p><img src=\"$1.dadn.png\">"  >>$HTML
@@ -386,7 +389,7 @@ echo "Starting Initiation calculations..."
        echo "<h3>Local Stress and Strain Response:</h3>" >>$HTML
        grep -i \#plotloops $1.initResults | ../delete1arg >temp5
 #      create the gnuplot load file
-       echo "set term pngcairo font \"Arial,12\"" >loadgp5
+       echo "set term pngcairo font \"Arial,10\"" >loadgp5
        echo "set grid"                        >>loadgp5
        echo "set output \"$1ss.png\" "        >>loadgp5
        echo "set xlabel \"Strain\"  "         >>loadgp5
@@ -402,7 +405,7 @@ echo "Starting Initiation calculations..."
     grep -i \#plotdam  $1.initResults | ../delete1arg >temp7
 
 #   create the gnuplot load file, re-use $TMP3
-    echo "set term pngcairo font \"Arial,12\""  >loadgp6
+    echo "set term pngcairo font \"Arial,10\""  >loadgp6
     echo "set output \"$1.damage.png\" "       >> loadgp6
     echo "set logscale x "                     >> loadgp6
     echo "set xlabel \"Cumulative Cycles\" "   >> loadgp6

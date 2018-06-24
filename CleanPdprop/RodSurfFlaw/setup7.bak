@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# setup5  vers 2.0  local (in this folder) command script to help user 
+# setup7  vers 2.2  local (in this folder) command script to help user 
 #          manage the files required to run plateLongSurfFlaw.f.v3.06
-# Usage:   ./setup5
+# Usage:   ./setup7
 
 #  Copyright (C) 2012  Al Conle
 # This file is free software; you can redistribute it and/or modify
@@ -18,32 +18,41 @@
 # 59 Temple Place -Suite 330, Boston, MA 02111-1307, USA. Try also their
 # web site: http://www.gnu.org/copyleft/gpl.html
 
+# vers 2.2 lists example file names in introduction
 # vers 2.0 adds in the FAD check for a tensile test file which is used to
 #          create the "fads.table" file. Jul23 2013
 
 TMP2=/tmp/temp222.$$
 #dadn=temp.dadn
 
-alias ls     "ls -lt | head -12"
-alias lstl   "ls -lt | head -30"
+#alias ls     "ls -lt | head -12"
+#alias lstl   "ls -lt | head -30"
 
 echo
 echo
-echo "--------------------   setup5  --------------------------------------------"
+echo "--------------------   setup7  --------------------------------------------"
 echo 
 echo "This bash command script helps the user prepare the files for the simulation run."
 echo "         (with experience you probably won't need to use this)"
+echo "     (setup7 pre-calculates values of Mm etc per BS7910 standard"
+echo "     It is STRONGLY recommended that you be familiar with BS7910 terminology )"
 echo
-echo "The following files are needed:                  (for format info see Manual)"
-echo "          0  pdprop.env  file: contains run-time info & instructions for sim."
-echo "          1  load history file  "
-echo "          2  da/dn vs deltaK:  a table file,  or the Paris eq. constants"
-echo "          3  strain-stress-life crack initiation file. (if you want initiation)"
-echo "          4  Tensile test strain-stress file for FAD's.(if you want FAD)"
-echo "Also the values for the geometry:  B,W, intial a,  PmEOL, PbEOL, Kmat"
+echo "The following files are needed:  "
+echo "    0  pdprop.env  file: contains run-time info & instructions for sim."
+echo "                   e.g. pdprop.env"
+echo "          The geometry etc values:  B,W, a, PmEOL, PbEOL, Kmat are in pdprop.env"
+echo "    1  load history file  "
+echo "                   e.g. load1.txt"
+echo "    2  da/dn vs deltaK:  a table file,  or the Paris eq. constants"
+echo "                   e.g. a36+1015.dadn    Paris constants are spec. in pdprop.env"
+echo "    3  strain-stress-life crack initiation file. (if you want initiation)"
+echo "                   e.g. merged_a36_fitted.html"
+echo "    4  Tensile test strain-stress file for FAD's.(if you want FAD)"
+echo "                   e.g. a36_Mattos_mono_engrSS_FLAT.txt"
 echo
 echo "If you have all the above items we can proceed. If not, type \"ctrl c\" to quit."
-#echo "(If things are unclear click on the \"Manual_plateEdgeflaw.html\" file)"
+echo "  (You can also read this setup7  file. It is a text file. )"
+#echo "(If things are unclear click on the \"Manual_RodSurfFlaw.html\" file)"
 echo
 while true; do
     read -p "Do you wish to proceed? :" yn
@@ -51,7 +60,7 @@ while true; do
         [Yy]* )  echo "reply was Y or y"; break
               ;;   # use this to delimit each case
         [Nn]* ) 
-                echo "reply was N or n"
+                echo "reply was N or n   ...exit"
                 exit
               ;;
         * )     echo "Please answer y or n or yes or no.";

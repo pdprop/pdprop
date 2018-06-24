@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# setup2  vers 2.1  local (in this folder) command script to help user 
+# setup2  vers 2.2  local (in this folder) command script to help user 
 #          manage the files required to run plateLongSurfFlaw.f.v3.06
 # Usage:   ./setup2
 
@@ -18,6 +18,7 @@
 # 59 Temple Place -Suite 330, Boston, MA 02111-1307, USA. Try also their
 # web site: http://www.gnu.org/copyleft/gpl.html
 
+# vers 2.2 lists example file names in introduction
 # vers 2.1 checks for presence of  #Kt=  in pdprop.env
 # vers 2.0 adds in the FAD check for a tensile test file which is used to
 #          create the "fads.table" file. Jul23 2013
@@ -25,26 +26,33 @@
 TMP2=/tmp/temp222.$$
 #dadn=temp.dadn
 
-alias ls     "ls -lt | head -12"
-alias lstl   "ls -lt | head -30"
+#alias ls     "ls -lt | head -12"
+#alias lstl   "ls -lt | head -30"
 
 echo
 echo
 echo "--------------------   setup2  --------------------------------------------"
 echo 
 echo "This bash command script helps the user prepare the files for the simulation run."
-echo "  (setup2 pre-calculates values of Mm, Mb, Mkm, Mkb etc) "
+echo "  (setup2 pre-calculates values of Mm, Mb, Mkm, Mkb etc "
+echo "     It is STRONGLY recommended that you be familiar with BS7910 terminology )"
 echo
-echo "The following files are needed:                  (for format info see Manual)"
-echo "          0  pdprop.env  file: contains run-time info & instructions for sim."
-echo "          1  load history file  "
-echo "          2  da/dn vs deltaK:  a table file,  or the Paris eq. constants"
-echo "          3  strain-stress-life crack initiation file. (if you want initiation)"
-echo "          4  Tensile test strain-stress file for FAD's.(if you want FAD)"
-echo "Also the values for the geometry:  B, intial a, L, PmEOL, PbEOL and Kt for initiation."
+echo "The following files are needed:  "
+echo "    0  pdprop.env  file: contains run-time info & instructions for sim."
+echo "                   e.g. pdprop.env"
+echo "           The geometry values:  B, a, L, PmEOL, PbEOL and Kt are in pdprop.env"
+echo "    1  load history file  "
+echo "                   e.g. load1.txt"
+echo "    2  da/dn vs deltaK:  a table file,  or the Paris eq. constants"
+echo "                   e.g. a36+1015.dadn    Paris constants are spec. in pdprop.env"
+echo "    3  strain-stress-life crack initiation file. (if you want initiation)"
+echo "                   e.g. merged_a36_fitted.html"
+echo "    4  Tensile test strain-stress file for FAD's.(if you want FAD)"
+echo "                   e.g. a36_Mattos_mono_engrSS_FLAT.txt"
 echo
 echo "If you have all the above items we can proceed. If not, type \"ctrl c\" to quit."
-echo "(If things are unclear click on the \"Manual_plateLongflaw.html\" file)"
+echo "  (You can also read this setup2  file. It is a text file. )"
+#echo "(If things are unclear click on the \"Manual_plateLongflaw.html\" file)"
 echo
 while true; do
     read -p "Do you wish to proceed? :" yn
