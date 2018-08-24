@@ -1,5 +1,5 @@
-C  plateWeldflaw.f  vers. 4.0   Notched Spec Crack Prop.  jun.16 e018
-        SAVE
+C  plateWeldflaw.f  vers. 4.2   Notched Spec Crack Prop.  aug 23 2018
+      SAVE
 C  Push-Down List crack prop. program. Semi-ellip. crack on surf near weld.
 C  Compile:  gfortran  -g -w -fbounds-check plateWeldflaw.f  -o plateWeldflaw
 C  Usage:   plateWeldflaw  scaleFactor <loadHistory >outputFile
@@ -26,6 +26,7 @@ C web site: http://www.gnu.org/copyleft/gpl.html
 C Note that some subroutines included in this work are from GNU GPL licenced
 C program:  http://fde.uwaterloo.ca/Fde/Calcs/saefcalc1.html
 
+C vers 4.2 Fix 2nd pt read in s/r getPeakLoads()  Aug 23 2018
 C vers  4.0 Fix double division by 2 of damage. See last line of getCracks()
 C           Bug found by W.H.Liang Jun 15 2018 (thanks!)
 C vers. 3.10 Replace getPeakLoads() s/r  to remove small cycles Oct 26 2013
@@ -315,7 +316,7 @@ C---------------------------  Run time input data------------------
   184 continue
       write(6,185)
       write(0,185)
-  185 format("# plateWeldflaw.f vers. 4.0"/
+  185 format("# plateWeldflaw.f vers. 4.2"/
      & "#Usage: plateWeldflaw  scale <histfile  >outfile"/)
 
       nargc = iargc()
@@ -3202,10 +3203,11 @@ C       Save a copy for rainflow file created near end of program
 C     Get the second point   stspres  to create the initial line.
   100 continue
       n=n+1
-      stsnext=ststot(n)    !get the 2nd point
+Cbug  fix here Aug 2018
+      stspres=ststot(n)    !get the 2nd point
       nstspres=n
 
-      if(stsnext .eq. stsold)then ! remove the new point
+      if(stspres .eq. stsold)then ! remove the new point
         nbad=nbad+1
         iloadflag(nstspres)=0
         write(6,*)"#DeleteLd samePoint: ",nstspres,stspres
@@ -3216,7 +3218,7 @@ C     Get the second point   stspres  to create the initial line.
 C     1st (stsold) and 2nd pts (stspres) have been read in----------------
 C     2nd pt is not equal to 1st.  Establish direction
       iupdown=+1
-      if(stsnext .lt. stsold)iupdown=-1
+      if(stspres .lt. stsold)iupdown=-1
 C     stspres is acceptable
       if(debugLoads)write(6,*)"#stsold,nstsold,stspres,nstspres",
      &               stsold,nstsold,stspres,nstspres,iupdown

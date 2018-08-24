@@ -1,5 +1,5 @@
-C  plateThruFlaw.f  vers. 4.0  Notched Spec Crack Prop.  jun.16 2018
-        SAVE
+C  plateThruFlaw.f  vers. 4.2  Notched Spec Crack Prop.  aug.23 2018
+      SAVE
 C  Push-Down List crack propagation program.
 C  Compile:  gfortran  -g -w -fbounds-check plateThruFlaw.f  -o plateThruFlaw
 C  Usage:   plateThruFlaw  scaleFactor <loadHistory >outputFile
@@ -26,6 +26,8 @@ C web site: http://www.gnu.org/copyleft/gpl.html
 C Note that some subroutines included in this work are from GNU GPL licenced
 C program:  http://fde.uwaterloo.ca/Fde/Calcs/saefcalc1.html
 C
+C vers  4.2 Fix reading of 2nd point in getPeakLoads()s/r  Aug.23 2018
+C vers  4.1 Code for no material fatigue/stress-strain 2Nf file (Jul 3 2018)
 C vers  4.0 Fix double division by 2 of damage. See last line of getCracks()
 C           Bug found by W.H.Liang Jun 15 2018 (thanks!)
 C vers. 3.10 Replace getPeakLoads() s/r  to remove small cycles Oct 26 2013
@@ -170,8 +172,9 @@ c     Load history storage.  If changing dimensions, also change same
 C                             in S/R getPeakLoads()
 C      integer*4  sae(10000)
 C     Stress membrane, bending, and total storage:
-      real*4 stsm(5000),stsb(5000),ststot(5000)
-      integer*4 iloadflag(5000) ! = 1 if ok, =0 not used, or intValue if repeat
+      real*4 stsm(6000),stsb(6000),ststot(6000)
+      integer*4 iloadflag(6000) ! = 1 if ok, =0 not used, or intValue if repeat
+C              Note!!  Note!! also change dimensions in getPeakLoads()
       real*4 ststotmax,ststotmin,ststotwindow
       integer*4 nloads
       logical debugLoads
@@ -218,7 +221,7 @@ C     Storage area limits. Change this if you change above real* and int*
       maxdadn=50     ! da/dn data store max
       ndiscMax=2000   ! store for discretized dadn()
 
-      maxloads=5000   ! max load storage
+      maxloads=6000   ! max load storage
       maxpd=4000     ! Push down list storage max
       m=maxpd
       maxnio=23       ! Max store for Rev data output
@@ -258,7 +261,7 @@ C---------------------------  Run time input data------------------
   184 continue
       write(6,185)
       write(0,185)
-  185 format("# plateThruFlaw.f vers. 4.0"/
+  185 format("# plateThruFlaw.f vers. 4.2"/
      & "#Usage: plateThruFlaw  scale <histfile  >outfile"/)
 
       nargc = iargc()
@@ -667,6 +670,7 @@ c     Loop back to here for next input line.
       ninput=ninput+1
 Cdebug      write(0,*)" read input line ",ninput
 
+
 C     Check for blank line
       if(inp300.eq." ")then
 C        write(6,"(a1)")" "
@@ -718,6 +722,7 @@ C           It must be a letter, not a number. Time to bomb out.
      &      " not a # and not a number. Fix program rdMatfile.f ")
             stop
          endif
+
 C        Ok, its a number
          nmatdata=nmatdata+1
          if(nmatdata .gt. maxmatdata)then
@@ -735,9 +740,21 @@ C        Ok, its a number
          go to 700
 
       endif
-  730    continue
-C        Look for the interval comment line:
+  730    continue  !input is a comment line
          read(inp300,*)firstfield
+
+C        Check for no data in file (added in vers 4.1)
+         if(firstfield.eq."#none=")then
+C          No material fatigue data file available
+           write(6,731)
+           write(0,731)
+  731      format("# No material fatigue data file available"/
+     &            "# nmatdata=0")
+C          stop reading this file. If needed use nmatdata=0 as indicator.
+           goto 790
+         endif
+
+C        Look for the interval comment line:
          if(firstfield.eq."#SnominalINTERVAL=")then
            read(inp300,*)firstfield,snominalInterval
            write(6,732)snominalInterval
@@ -763,6 +780,7 @@ C          stress and strain given Snominal.
   752      format("#matfile #Computed #SnominalInterval= ",E14.7)
          endif
 
+  790 continue !jump here if no material file available
 
 C--------------------  Read in the dadn data table -------------------
 C       Table e.g.:
@@ -2514,8 +2532,8 @@ C     focused on the total stress  ststot() to decide removal or keep.
 c     Load history storage.  If changing dimensions, also change same 
 C                             in mainline
 C     Stress membrane, bending, and total storage:
-      real*4 stsm(5000),stsb(5000),ststot(5000)
-      integer*4 iloadflag(5000) ! 1=save 2=delete  n=repeat
+      real*4 stsm(6000),stsb(6000),ststot(6000)
+      integer*4 iloadflag(6000) ! 1=save 2=delete  n=repeat
       real*4 ststotmax,ststotmin,ststotwindow
       integer*4 nloads
       logical debugLoads
@@ -2552,10 +2570,11 @@ C       Save a copy for rainflow file created near end of program
 C     Get the second point   stspres  to create the initial line.
   100 continue
       n=n+1
-      stsnext=ststot(n)    !get the 2nd point
+Cbug fixed here in vers 4.2
+      stspres=ststot(n)    !get the 2nd point
       nstspres=n
 
-      if(stsnext .eq. stsold)then ! remove the new point
+      if(stspres .eq. stsold)then ! remove the new point
         nbad=nbad+1
         iloadflag(nstspres)=0
         write(6,*)"#DeleteLd samePoint: ",nstspres,stspres
@@ -2566,7 +2585,7 @@ C     Get the second point   stspres  to create the initial line.
 C     1st (stsold) and 2nd pts (stspres) have been read in----------------
 C     2nd pt is not equal to 1st.  Establish direction
       iupdown=+1
-      if(stsnext .lt. stsold)iupdown=-1
+      if(stspres .lt. stsold)iupdown=-1
 C     stspres is acceptable
       if(debugLoads)write(6,*)"#stsold,nstsold,stspres,nstspres",
      &               stsold,nstsold,stspres,nstspres,iupdown

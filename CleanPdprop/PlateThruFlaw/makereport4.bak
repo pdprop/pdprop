@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# makereport4  vers. 2.4  local (in this folder) command script to help user 
+# makereport4  vers. 2.6  local (in this folder) command script to help user 
 #             transform the outputfile into an html report.
 # Usage:   ./makereport4 simOutFileName
 
@@ -22,7 +22,8 @@
 # 59 Temple Place -Suite 330, Boston, MA 02111-1307, USA. Try also their
 # web site: http://www.gnu.org/copyleft/gpl.html
 
-# vers  2.5  Slight format changes 2018
+# vers  2.6  print dadn filename jul2018
+# vers  2.5  Slight format changes 2018,  
 # vers. 2.3  add code to read Kt  from pdprop.env  Aug25 2015
 # vers. 2.1  adds small plots for begin, end of history
 # Forked from "makereport2" and altered  Aug. 29 2013
@@ -130,7 +131,7 @@ read <$TMP2 item1 nact  LEFTOVER
 
 echo "<p>Crack Propagation Results:<br>(<i> " >>$HTML
 grep vers\. $1 | grep plateThruFlaw           >>$HTML
-echo "# makereport4  vers. 2.4"               >>$HTML
+echo "# makereport4  vers. 2.6"               >>$HTML
 echo "</i>)<ul><li>No. of Reversals= $nrev revs. or $cycles cycles" >>$HTML
 echo "<li>Final _____ <b>a </b>=      $a   mm"    >>$HTML
 echo "<li>No. of History Reps.= $nblk reps. + $nact revs."  >>$HTML
@@ -237,7 +238,13 @@ echo "Plotting da/dn table from text results file ..."
     echo "set xrange [10:5000]"                           >>loadgp1b
     echo "plot  \"dadntable$$\"  u 1:2 title \"$1\" w lp" >>loadgp1b
     gnuplot "loadgp1b"
-    echo "<p><img src=\"$1.dadn.png\">"  >>$HTML
+    echo "<p><img src=\"$1.dadn.png\">"     >>$HTML
+    echo "<br> " >>$HTML
+    grep -i ^\#DADN=       pdprop.env.user  >>$HTML
+    echo "<br> " >>$HTML
+    grep -i ^\#DADN_PARIS= pdprop.env.user  >>$HTML
+    echo "<br> " >>$HTML
+    grep -i ^\#DADN_TABLE= pdprop.env.user  >>$HTML
     echo "<br> " >>$HTML
 
 #   These are maxima values for each of the 1000 intervals
